@@ -3,6 +3,11 @@
 All notable changes in this project will be documented in this file.
 
 
+## <small>1.2.2 (2026-03-10)</small>
+
+* fix(env): add valkey ([4ea0d386c4cd58d89c52850b32c0a885c9aabd4a](https://github.com/omnixys/address-service/commit/4ea0d386c4cd58d89c52850b32c0a885c9aabd4a))
+* Merge branch 'main' of https://github.com/omnixys/address-service ([72ea83170686b1e5d9ab5f863270d2cfdbd8f805](https://github.com/omnixys/address-service/commit/72ea83170686b1e5d9ab5f863270d2cfdbd8f805))
+
 ## <small>1.2.1 (2026-03-10)</small>
 
 * fix(add auth): add authentication ([bda56cf32636f0249c5411863d75dd9ffe6d39b2](https://github.com/omnixys/address-service/commit/bda56cf32636f0249c5411863d75dd9ffe6d39b2))
