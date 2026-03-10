@@ -3,6 +3,12 @@
 All notable changes in this project will be documented in this file.
 
 
+## 1.2.0 (2026-03-10)
+
+* feat(DB-schema): add User address schema (1.4)) ([a2d238cad7aec89ab73258e81f1c31c76585f766](https://github.com/omnixys/omnixys-address-service/commit/a2d238cad7aec89ab73258e81f1c31c76585f766))
+* Merge branch 'main' of https://github.com/omnixys/omnixys-address-service ([d7117b555237b2ada123581dfdaca287f6da6e3f](https://github.com/omnixys/omnixys-address-service/commit/d7117b555237b2ada123581dfdaca287f6da6e3f))
+* feat(cache) :add Kafka, Redis, OTLP & UserAddress domain ([bd1a19fde9a8cc3f7f63fca31b71310ae808ee5f](https://github.com/omnixys/omnixys-address-service/commit/bd1a19fde9a8cc3f7f63fca31b71310ae808ee5f))
+
 ## <small>1.1.2 (2026-02-27)</small>
 
 * fix(seed): update citySeeder ([9d9257369fcc40fd40772d8017e0b327be3a4030](https://github.com/omnixys/omnixys-address-service/commit/9d9257369fcc40fd40772d8017e0b327be3a4030))
