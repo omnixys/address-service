@@ -45,7 +45,7 @@ spring:
     redis:
       host: ${app.valkey.host}
       port: ${app.valkey.port}
-      password: DeinStarkesPasswort  #${app.valkey.password}
+      password: ${app.valkey.password}
       timeout: 2s
   kafka:
     bootstrap-servers: ${app.kafka.host}:${app.kafka.port}
@@ -155,7 +155,7 @@ app:
 
   kafka:
     host: ${KAFKA_HOST}
-    port: ${KAKFA_PORT}
+    port: ${KAFKA_PORT}
 
 # Logging-Konfiguration
 logging:
