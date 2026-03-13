@@ -3,6 +3,10 @@
 All notable changes in this project will be documented in this file.
 
 
+## <small>1.2.4 (2026-03-13)</small>
+
+* fix(service): major Service update ([71eafef90a6036727958764c18149aee2ffb3f19](https://github.com/omnixys/address-service/commit/71eafef90a6036727958764c18149aee2ffb3f19))
+
 ## <small>1.2.3 (2026-03-12)</small>
 
 * Merge branch 'main' of https://github.com/omnixys/address-service ([bfbc1ee4f3cb07d036ef09ee3a51db3abba2f781](https://github.com/omnixys/address-service/commit/bfbc1ee4f3cb07d036ef09ee3a51db3abba2f781))
