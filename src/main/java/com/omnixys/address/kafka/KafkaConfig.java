@@ -1,4 +1,4 @@
-package com.omnixys.address.config;
+package com.omnixys.address.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;

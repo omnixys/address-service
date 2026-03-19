@@ -33,4 +33,6 @@ public interface StateRepository extends JpaRepository<State, UUID>, JpaSpecific
     Page<State> findByCountry(Country country, Pageable pageable);
 
     Optional<State> findByIso3166CodeIgnoreCase(String iso3166Code);
+
+    Optional<State> findByNameAndCountryId(String name, UUID countryId);
 }

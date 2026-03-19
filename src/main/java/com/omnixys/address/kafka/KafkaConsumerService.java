@@ -1,208 +1,214 @@
 package com.omnixys.address.kafka;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.omnixys.address.models.dto.AddUserAddressesDTO;
 import com.omnixys.address.models.dto.DeleteAddressesDTO;
 import com.omnixys.address.models.dto.TestEvent;
+import com.omnixys.address.models.inputs.CreateEventAddressInput;
+import com.omnixys.address.services.EventAddressService;
 import com.omnixys.address.services.UserAddressService;
-import io.micrometer.observation.annotation.Observed;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.*;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.core.type.TypeReference;
-
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
-import static com.omnixys.address.kafka.KafkaTopicProperties.TOPIC_CREATE_USER_ADDRESSES;
-import static com.omnixys.address.kafka.KafkaTopicProperties.TOPIC_TEST;
-
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.api.trace.Tracer;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class KafkaConsumerService {
 
-    private final ApplicationContext context;
-    private final UserAddressService userAddressService;
     private final ObjectMapper objectMapper;
-
-    public static final String GROUP_ID = "${app.groupId}";
-
+    private final UserAddressService userAddressService;
+    private final EventAddressService eventAddressService;
     private final Tracer tracer;
-//    private final LoggerPlusFactory factory;
-//    private LoggerPlus logger() {
-//        return factory.getLogger(getClass());
-//    }
 
-    @KafkaListener(topics = "test")
-    public void test(byte[] payload) throws Exception {
+    // =========================================================
+    // LISTENERS
+    // =========================================================
 
-        TestEvent event =
-                objectMapper.readValue(payload, TestEvent.class);
+    @KafkaListener(topics = "authentication.create.addresses", groupId = "${app.groupId}")
+    public void consumeCreateUserAddress(byte[] payload, ConsumerRecord<String, byte[]> record) {
+        handle(record, payload, () -> {
+            EventEnvelope<AddUserAddressesDTO> event =
+                    objectMapper.readValue(payload, new TypeReference<>() {});
+            userAddressService.createUserAddresses(event.payload());
+        });
+    }
 
-        log.info("Received test event {}", event.message());
+    @KafkaListener(topics = "authentication.delete.addresses", groupId = "${app.groupId}")
+    public void consumeDeleteUserAddress(byte[] payload, ConsumerRecord<String, byte[]> record) {
+        handle(record, payload, () -> {
+            EventEnvelope<DeleteAddressesDTO> event =
+                    objectMapper.readValue(payload, new TypeReference<>() {});
+            userAddressService.deleteUserAddressByUserId(event.payload().id());
+        });
+    }
+
+    @KafkaListener(topics = "event.create.address", groupId = "${app.groupId}")
+    public void consumeCreateEventAddress(byte[] payload, ConsumerRecord<String, byte[]> record) {
+        handle(record, payload, () -> {
+            EventEnvelope<CreateEventAddressInput> event =
+                    objectMapper.readValue(payload, new TypeReference<>() {});
+            eventAddressService.createEventAddress(event.payload());
+        });
+    }
+
+    @KafkaListener(topics = "event.delete.address", groupId = "${app.groupId}")
+    public void consumeDeleteEventAddress(byte[] payload, ConsumerRecord<String, byte[]> record) {
+        handle(record, payload, () -> {
+            EventEnvelope<DeleteAddressesDTO> event =
+                    objectMapper.readValue(payload, new TypeReference<>() {});
+            eventAddressService.deleteEventAddressByEventId(event.payload().id());
+        });
     }
 
 
-    @KafkaListener(topics = "address.createUserAddresses.authentication")
-    public void consumeUserAddress(byte[] payload) throws Exception {
-
-        EventEnvelope<AddUserAddressesDTO> event =
-                objectMapper.readValue(
-                        payload,
-                        new TypeReference<EventEnvelope<AddUserAddressesDTO>>() {}
-                );
-
-        AddUserAddressesDTO dto = event.payload();
-
-        log.info("Received address event {}", dto);
-
-        userAddressService.createUserAddresses(dto);
+    @KafkaListener(topics = "test", groupId = "${app.groupId}")
+    public void consumeTest(byte[] payload, ConsumerRecord<String, byte[]> record) {
+        handle(record, payload, () -> {
+            TestEvent event = objectMapper.readValue(payload, TestEvent.class);
+            log.info("Test event received: {}", event.message());
+        });
     }
 
-    @KafkaListener(topics = "address.delete.authentication")
-    public void deleteAddresses(byte[] payload) throws Exception {
+    // =========================================================
+    // CORE PROCESSING PIPELINE
+    // =========================================================
 
-        EventEnvelope<DeleteAddressesDTO> event =
-                objectMapper.readValue(
-                        payload,
-                        new TypeReference<EventEnvelope<DeleteAddressesDTO>>() {}
-                );
+    private void handle(ConsumerRecord<String, byte[]> record, byte[] payload, ThrowingRunnable logic) {
+        Context extractedContext = extractContext(record.headers());
 
-        var dto = event.payload();
+        Span span = startConsumerSpan(record, extractedContext);
 
-        log.info("Received delete event {}", dto);
+        Context processingContext = extractedContext.with(span);
 
-        userAddressService.deleteUserAddressByUserId(dto.id());
-    }
+        try (Scope scope = processingContext.makeCurrent()) {
 
-//    @KafkaListener(topics = TOPIC_CREATE_USER_ADDRESSES, groupId = "${app.groupId}")
-//    @Observed(name = "address.kafka.consume")
-//    public void consumeUserAddress(ConsumerRecord<String, AddUserAddressesDTO> record) {
-//        final var headers = record.headers();
-//        final var userIdAndToken = record.value();
-//
-//        final var traceParent = getHeader(headers, "traceparent");
-//
-//        SpanContext linkedContext = null;
-//        if (traceParent != null && traceParent.startsWith("00-")) {
-//            String[] parts = traceParent.split("-");
-//            if (parts.length == 4) {
-//                String traceId = parts[1];
-//                String spanId = parts[2];
-//                boolean sampled = "01".equals(parts[3]);
-//
-//                linkedContext = SpanContext.createFromRemoteParent(
-//                    traceId,
-//                    spanId,
-//                    sampled ? TraceFlags.getSampled() : TraceFlags.getDefault(),
-//                    TraceState.getDefault()
-//                );
-//            }
-//        }
-//
-//        // ✨ 2. Starte neuen Trace mit Link (nicht als Parent!)
-//        SpanBuilder spanBuilder = tracer.spanBuilder("address.kafka.consume")
-//            .setSpanKind(SpanKind.CONSUMER)
-//            .setAttribute("messaging.system", "kafka")
-//            .setAttribute("messaging.destination", TOPIC_CREATE_USER_ADDRESSES)
-//            .setAttribute("messaging.operation", "consume");
-//
-//        if (linkedContext != null && linkedContext.isValid()) {
-//            spanBuilder.addLink(linkedContext);
-//        }
-//
-//        Span span = spanBuilder.startSpan();
-//
-//        try (Scope scope = span.makeCurrent()) {
-//            assert scope != null;
-//            log.info("📥 Empfangene Nachricht auf '{}': {}", TOPIC_CREATE_USER_ADDRESSES, userIdAndToken);
-//            userAddressService.createUserAddresses(userIdAndToken);
-//            span.setStatus(StatusCode.OK);
-//        } catch (Exception e) {
-//            span.recordException(e);
-//            span.setStatus(StatusCode.ERROR, "Kafka-Fehler");
-//            log.error("❌ Fehler beim Erstellen des Kontos", e);
-//        } finally {
-//            span.end();
-//        }
-//    }
+            logTraceDebug(record, extractedContext, span);
 
-    private String getHeader(Headers headers, String key) {
-        Header header = headers.lastHeader(key);
-        return header != null ? new String(header.value(), StandardCharsets.UTF_8) : null;
-    }
+            logic.run();
 
-//    @Observed(name = "kafka-consume.invoice.orchestration")
-//    @KafkaListener(
-//        topics = {
-//            TOPIC_INVOICE_SHUTDOWN_ORCHESTRATOR,
-//            TOPIC_INVOICE_START_ORCHESTRATOR,
-//            TOPIC_INVOICE_RESTART_ORCHESTRATOR
-//        },
-//        groupId = "${app.groupId}"
-//    )
-//    public void handlePersonScoped(ConsumerRecord<String, String> record) {
-//        final String topic = record.topic();
-//        logger().info("Person-spezifisches Kommando empfangen: {}", topic);
-//
-//        switch (topic) {
-//            case TOPIC_INVOICE_SHUTDOWN_ORCHESTRATOR -> shutdown();
-//            case TOPIC_INVOICE_RESTART_ORCHESTRATOR -> restart();
-//            case TOPIC_INVOICE_START_ORCHESTRATOR -> logger().info("Startsignal für Person-Service empfangen");
-//        }
-//    }
-
-//    @Observed(name = "kafka-consume.all.orchestration")
-//    @KafkaListener(
-//        topics = {
-//            TOPIC_ALL_SHUTDOWN_ORCHESTRATOR,
-//            TOPIC_ALL_START_ORCHESTRATOR,
-//            TOPIC_ALL_RESTART_ORCHESTRATOR
-//        },
-//        groupId = "${app.groupId}"
-//    )
-//    public void handleGlobalScoped(ConsumerRecord<String, String> record) {
-//        final String topic = record.topic();
-//        logger().info("Globales Systemkommando empfangen: {}", topic);
-//
-//        switch (topic) {
-//            case TOPIC_ALL_SHUTDOWN_ORCHESTRATOR -> shutdown();
-//            case TOPIC_ALL_RESTART_ORCHESTRATOR -> restart();
-//            case TOPIC_ALL_START_ORCHESTRATOR -> logger().info("Globales Startsignal empfangen");
-//        }
-//    }
-
-    private void shutdown() {
-        try {
-            log.info("→ Anwendung wird heruntergefahren (Shutdown-Kommando).");
-            ((ConfigurableApplicationContext) context).close();
         } catch (Exception e) {
-            log.error("Fehler beim Shutdown: {}", e.getMessage(), e);
+            span.recordException(e);
+            span.setStatus(StatusCode.ERROR);
+            log.error("Kafka processing failed", e);
+        } finally {
+            span.end();
         }
     }
 
+    // =========================================================
+    // CONTEXT EXTRACTION
+    // =========================================================
 
-    private void restart() {
-        log.info("→ Anwendung wird neugestartet (Restart-Kommando).");
-        ((ConfigurableApplicationContext) context).close();
-        // Neustart durch externen Supervisor erwartet
+    private Context extractContext(Headers headers) {
+        return GlobalOpenTelemetry.getPropagators()
+                .getTextMapPropagator()
+                .extract(Context.root(), headers, buildHeaderGetter());
+    }
+
+    // =========================================================
+    // SPAN CREATION
+    // =========================================================
+
+    private Span startConsumerSpan(ConsumerRecord<String, byte[]> record, Context parentContext) {
+        return tracer.spanBuilder("kafka.consume " + record.topic())
+                .setSpanKind(SpanKind.CONSUMER)
+                .setParent(parentContext)
+                .setAttribute("messaging.system", "kafka")
+                .setAttribute("messaging.operation", "receive")
+                .setAttribute("messaging.destination.name", record.topic())
+                .setAttribute("messaging.kafka.partition", record.partition())
+                .setAttribute("messaging.kafka.offset", record.offset())
+                .startSpan();
+    }
+
+    // =========================================================
+    // HEADER GETTER
+    // =========================================================
+
+    private TextMapGetter<Headers> buildHeaderGetter() {
+        return new TextMapGetter<>() {
+            @Override
+            public Iterable<String> keys(Headers carrier) {
+                return carrier == null
+                        ? java.util.List.of()
+                        : java.util.Arrays.stream(carrier.toArray()).map(Header::key).toList();
+            }
+
+            @Override
+            public String get(Headers carrier, String key) {
+                if (carrier == null) return null;
+                Header header = carrier.lastHeader(key);
+                return header == null ? null : new String(header.value(), StandardCharsets.UTF_8);
+            }
+        };
+    }
+
+    // =========================================================
+    // TRACE DEBUGGING
+    // =========================================================
+
+    private void logTraceDebug(ConsumerRecord<String, byte[]> record,
+                               Context extractedContext,
+                               Span span) {
+
+        Span parentSpan = Span.fromContext(extractedContext);
+
+        Map<String, Object> debug = new HashMap<>();
+        debug.put("topic", record.topic());
+        debug.put("partition", record.partition());
+        debug.put("offset", record.offset());
+        debug.put("headers", extractHeaders(record.headers()));
+
+        debug.put("extractedContext", Map.of(
+                "traceId", parentSpan.getSpanContext().getTraceId(),
+                "spanId", parentSpan.getSpanContext().getSpanId(),
+                "valid", parentSpan.getSpanContext().isValid(),
+                "remote", parentSpan.getSpanContext().isRemote()
+        ));
+
+        debug.put("consumerSpan", Map.of(
+                "traceId", span.getSpanContext().getTraceId(),
+                "spanId", span.getSpanContext().getSpanId()
+        ));
+
+        debug.put("relation", Map.of(
+                "sameTrace", span.getSpanContext().getTraceId()
+                        .equals(parentSpan.getSpanContext().getTraceId()),
+                "parentSpanId", parentSpan.getSpanContext().getSpanId()
+        ));
+
+        log.info("TRACE_DEBUG {}", debug);
+    }
+
+    private Map<String, String> extractHeaders(Headers headers) {
+        Map<String, String> map = new HashMap<>();
+        headers.forEach(h ->
+                map.put(h.key(), new String(h.value(), StandardCharsets.UTF_8))
+        );
+        return map;
+    }
+
+    // =========================================================
+    // FUNCTIONAL INTERFACE
+    // =========================================================
+
+    @FunctionalInterface
+    private interface ThrowingRunnable {
+        void run() throws Exception;
     }
 }
