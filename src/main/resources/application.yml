@@ -16,6 +16,17 @@ server:
   shutdown: graceful
 
 management:
+  observations:
+    key-values:
+      service.name: address-service
+
+  opentelemetry:
+    resource-attributes:
+      service.name: address
+    tracing:
+      exporter:
+        otlp:
+          enabled: true
   metrics:
     enable:
       all: true
@@ -33,11 +44,31 @@ management:
           - info
           - metrics
   tracing:
+    enabled: true
+    propagation:
+      type: w3c
     sampling:
       probability: 1.0
   otlp:
     tracing:
+      transport: http
       endpoint: http://${app.tracing.tempo}:4318/v1/traces
+
+
+omnixys:
+  observability:
+    service-name: address
+    kafka:
+      enabled: true
+      default-topic: address.send.logstream
+    batch:
+      enabled: true
+  kafka:
+    bootstrap-servers: ${app.kafka.host}:${app.kafka.port}
+    enabled: true
+    topics: authentication.create.addresses, authentication.delete.addresses
+    group-id: address-consumer
+    client-id: address-service
 
 # Spring Boot Einstellungen
 spring:
@@ -47,33 +78,6 @@ spring:
       port: ${app.valkey.port}
       password: ${app.valkey.password}
       timeout: 2s
-  kafka:
-    bootstrap-servers: ${app.kafka.host}:${app.kafka.port}
-    consumer:
-      group-id: ${app.groupId}
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-
-#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
-#      properties:
-#        spring:
-#          json:
-#            type:
-#              mapping: >
-#                com.omnixys.address.models.dto.AddUserAddressesDTO:com.omnixys.address.models.dto.AddUserAddressesDTO
-#            trusted:
-#              packages:
-#                - com.omnixys.omnixys.address.models.dto.AddUserAddressesDTO
-#          deserializer:
-#            value:
-#              delegate:
-#                class: org.springframework.kafka.support.serializer.JsonDeserializer
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      # value-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
   checkpoint.restore: onRefresh
 
@@ -127,6 +131,8 @@ spring:
           issuer-uri: ${app.keycloak.uri}
 
 
+
+
 # Applikationsspezifische Einstellungen
 app:
   seed:
@@ -175,6 +181,15 @@ logging:
       %-40.40logger{39} : %m%n%wEx
   level:
     com.omnixys.address: trace
+
+#    org.springframework.boot.autoconfigure: debug
+#    org.springframework.kafka: debug
+    com.omnixys.observability: debug
+
+    io.opentelemetry.exporter.otlp: DEBUG
+    io.opentelemetry.sdk.trace.export: DEBUG
+    io.opentelemetry: DEBUG
+
     org.apache.catalina.loader.WebappClassLoaderBase: info
     org.springframework.boot.availability.ApplicationAvailabilityBean: debug
     org.springframework.boot.devtools.autoconfigure.ConditionEvaluationDeltaLoggingListener: warn

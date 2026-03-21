@@ -3,6 +3,7 @@ package com.omnixys.address.services;
 import com.omnixys.address.models.entity.Country;
 import com.omnixys.address.models.inputs.CountryFilterInput;
 import com.omnixys.address.repository.CountryRepository;
+import com.omnixys.observability.logging.OmnixysLogger;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -24,10 +26,12 @@ import java.util.UUID;
 public class CountryService {
 
     private final CountryRepository countryRepository;
+    private final OmnixysLogger logger;
 
     public List<Country> findAllCountries() {
 
         log.debug("Fetching all countries");
+
 
         var countries = countryRepository.findAll();
 
@@ -56,13 +60,21 @@ public class CountryService {
 
     public Country findByName(String name) {
 
-        log.debug("Fetching country by name={}", name);
+        var logs = logger.child("country.findByName");
+
+        logs.debug("Creating user", Map.of("userId", 123));
+
+
+
+//        logger.info("Fetching country by name", Map.of("name",name));
+
 
         return countryRepository.findByName(name)
                 .orElseThrow(() -> {
                     log.warn("Country not found for name={}", name);
                     return new IllegalArgumentException("Country not found: " + name);
                 });
+
     }
 
     // =====================================================
