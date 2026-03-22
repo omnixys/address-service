@@ -222,12 +222,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - run: |
-          git fetch origin main
-          git checkout origin/main
-
-      - run: grep -m1 "<version>" pom.xml
-
       - name: 🔐 Configure Maven settings.xml
         run: |
           mkdir -p ~/.m2
@@ -282,6 +276,13 @@ jobs:
           GPR_USER: ${{ github.actor }}
           GPR_KEY: ${{ secrets.OMNIXYS_TOKEN }}
 
+
+      - run: |
+          git fetch origin main
+          git checkout origin/main
+
+      - run: grep -m1 "<version>" pom.xml
+
       - name: ☕ Setup Java
         uses: actions/setup-java@v4
         with:
@@ -290,7 +291,7 @@ jobs:
 
       - name: 📦 Extract version
         run: |
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -e -X -DforceStdout)
           echo "CURRENT_VERSION=$VERSION" >> $GITHUB_ENV
           echo "CURRENT_DATE=$(date -u +'%Y-%m-%d')" >> $GITHUB_ENV
 
@@ -366,12 +367,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - run: |
-          git fetch origin main
-          git checkout origin/main
-
-      - run: grep -m1 "<version>" pom.xml
-
       - name: 🔐 Configure Maven settings.xml
         run: |
           mkdir -p ~/.m2
@@ -425,6 +420,12 @@ jobs:
         env:
           GPR_USER: ${{ github.actor }}
           GPR_KEY: ${{ secrets.OMNIXYS_TOKEN }}
+
+      - run: |
+          git fetch origin main
+          git checkout origin/main
+
+      - run: grep -m1 "<version>" pom.xml
 
       - name: ☕ Setup Java
         uses: actions/setup-java@v4

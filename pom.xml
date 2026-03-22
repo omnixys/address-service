@@ -2,6 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.omnixys</groupId>
+    <artifactId>address</artifactId>
+    <version>2.0.5</version>
+    <name>address</name>
+    <description>address</description>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -9,11 +16,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>com.omnixys</groupId>
-    <artifactId>address</artifactId>
-    <version>2.0.5</version>
-    <name>address</name>
-    <description>address</description>
+
 
     <url>https://github.com/omnixys/address-service</url>
 
