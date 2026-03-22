@@ -3,6 +3,16 @@
 All notable changes in this project will be documented in this file.
 
 
+## [2.0.17](https://github.com/omnixys/address-service/compare/v2.0.16...v2.0.17) (2026-03-22)
+
+### Other
+
+* **Other:** Merge branch 'main' of https://github.com/omnixys/address-service ([](https://github.com/omnixys/address-service/commit/ca8b64aca0e9ba847e959b8238100d197b73ac39))
+
+### U
+
+* **U:** up ([](https://github.com/omnixys/address-service/commit/5ea0c552268b5d50644cbb3cdb2df1ac0c870cca))
+
 ## [2.0.16](https://github.com/omnixys/address-service/compare/v2.0.15...v2.0.16) (2026-03-22)
 
 ### Dockerfile
