@@ -57,13 +57,49 @@ jobs:
           mkdir -p ~/.m2
           cat <<EOF > ~/.m2/settings.xml
           <settings>
-            <servers>
-              <server>
-                <id>github</id>
-                <username>${GPR_USER}</username>
-                <password>${GPR_KEY}</password>
-              </server>
-            </servers>
+             <servers>
+                 <server>
+                     <id>github</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                     <server>
+                     <id>github-starter</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                         <server>
+                     <id>github-bom</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                     <server>
+                   <id>github-observability</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                 <server>
+                   <id>github-kafka</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                 <server>
+                   <id>github-logger</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                 <server>
+                   <id>github-bom</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             </servers>
           </settings>
           EOF
         env:
@@ -108,13 +144,49 @@ jobs:
           mkdir -p ~/.m2
           cat <<EOF > ~/.m2/settings.xml
           <settings>
-            <servers>
-              <server>
-                <id>github</id>
-                <username>${GPR_USER}</username>
-                <password>${GPR_KEY}</password>
-              </server>
-            </servers>
+             <servers>
+                 <server>
+                     <id>github</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                     <server>
+                     <id>github-starter</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                         <server>
+                     <id>github-bom</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                     <server>
+                   <id>github-observability</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                 <server>
+                   <id>github-kafka</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                 <server>
+                   <id>github-logger</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                 <server>
+                   <id>github-bom</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             </servers>
           </settings>
           EOF
         env:
@@ -166,13 +238,49 @@ jobs:
           mkdir -p ~/.m2
           cat <<EOF > ~/.m2/settings.xml
           <settings>
-            <servers>
-              <server>
-                <id>github</id>
-                <username>${GPR_USER}</username>
-                <password>${GPR_KEY}</password>
-              </server>
-            </servers>
+             <servers>
+                 <server>
+                     <id>github</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                     <server>
+                     <id>github-starter</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                         <server>
+                     <id>github-bom</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                     <server>
+                   <id>github-observability</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                 <server>
+                   <id>github-kafka</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                 <server>
+                   <id>github-logger</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                 <server>
+                   <id>github-bom</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             </servers>
           </settings>
           EOF
         env:
@@ -266,13 +374,49 @@ jobs:
           mkdir -p ~/.m2
           cat <<EOF > ~/.m2/settings.xml
           <settings>
-            <servers>
-              <server>
-                <id>github</id>
-                <username>${GPR_USER}</username>
-                <password>${GPR_KEY}</password>
-              </server>
-            </servers>
+             <servers>
+                 <server>
+                     <id>github</id>
+                        <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                     <server>
+                     <id>github-starter</id>
+                        <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                         <server>
+                     <id>github-bom</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                     <server>
+                   <id>github-observability</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                 <server>
+                   <id>github-kafka</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                 <server>
+                   <id>github-logger</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             
+                 <server>
+                   <id>github-bom</id>
+                     <username>${GPR_USER}</username>
+                        <password>${GPR_KEY}</password>
+                 </server>
+             </servers>
           </settings>
           EOF
         env:
