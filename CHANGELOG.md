@@ -3,6 +3,16 @@
 All notable changes in this project will be documented in this file.
 
 
+## [2.0.5](https://github.com/omnixys/address-service/compare/v2.0.4...v2.0.5) (2026-03-22)
+
+### Debug
+
+* **Debug:** Update ci-cd.yaml ([](https://github.com/omnixys/address-service/commit/0e17f6ce6313982c64f681645a54e71d344f48ff))
+
+### Other
+
+* **Other:** Merge branch 'main' of https://github.com/omnixys/address-service ([](https://github.com/omnixys/address-service/commit/66319edbca2256a331f1c0b416bcf1e4ebb267df))
+
 ## [2.0.4](https://github.com/omnixys/address-service/compare/v2.0.3...v2.0.4) (2026-03-22)
 
 ### Docker
