@@ -3,6 +3,21 @@
 All notable changes in this project will be documented in this file.
 
 
+## [2.0.0](https://github.com/omnixys/address-service/compare/v1.2.4...v2.0.0) (2026-03-22)
+
+### Ci
+
+* **Ci:** Update ci-cd.yaml ([](https://github.com/omnixys/address-service/commit/a07625dccc0e3e5f46eaeae0e6b041052d324b30))
+
+### Other
+
+* **Other:** feat(event) add event-address ([](https://github.com/omnixys/address-service/commit/55f5650429df1ea2124e834acb8eb2bee918aa4d))
+
+### Package
+
+* **Package:** integrated new Package ([](https://github.com/omnixys/address-service/commit/24710b97aa844e30dc247a8608535b0f3639d87b))
+* **Package:** observability + kafka ([](https://github.com/omnixys/address-service/commit/7180065a24fde7955d0f00100cfdd2874f6d52b0))
+
 ## <small>1.2.4 (2026-03-13)</small>
 
 * fix(service): major Service update ([71eafef90a6036727958764c18149aee2ffb3f19](https://github.com/omnixys/address-service/commit/71eafef90a6036727958764c18149aee2ffb3f19))
