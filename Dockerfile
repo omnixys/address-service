@@ -14,42 +14,43 @@ WORKDIR /source
 
 RUN --mount=type=secret,id=gpr_user \
     --mount=type=secret,id=gpr_key \
-    bash -c 'mkdir -p /root/.m2 && cat <<EOF > /root/.m2/settings.xml
-<settings>
-    <servers>
-        <server>
-            <id>github</id>
-            <username>$(cat /run/secrets/gpr_user)</username>
-            <password>$(cat /run/secrets/gpr_key)</password>
-        </server>
-        <server>
-            <id>github-starter</id>
-            <username>$(cat /run/secrets/gpr_user)</username>
-            <password>$(cat /run/secrets/gpr_key)</password>
-        </server>
-        <server>
-            <id>github-bom</id>
-            <username>$(cat /run/secrets/gpr_user)</username>
-            <password>$(cat /run/secrets/gpr_key)</password>
-        </server>
-         <server>
-          <id>github-observability</id>
-            <username>$(cat /run/secrets/gpr_user)</username>
-            <password>$(cat /run/secrets/gpr_key)</password>
-        </server>
-        <server>
-          <id>github-kafka</id>
-            <username>$(cat /run/secrets/gpr_user)</username>
-            <password>$(cat /run/secrets/gpr_key)</password>
-        </server>
-        <server>
-          <id>github-logger</id>
-          <username>$(cat /run/secrets/gpr_user)</username>
-          <password>$(cat /run/secrets/gpr_key)</password>
-        </server>
-    </servers>
-</settings>
-EOF'
+    mkdir -p /root/.m2 && \
+    printf "%s\n" \
+"<settings>" \
+"    <servers>" \
+"        <server>" \
+"            <id>github</id>" \
+"            <username>$(cat /run/secrets/gpr_user)</username>" \
+"            <password>$(cat /run/secrets/gpr_key)</password>" \
+"        </server>" \
+"        <server>" \
+"            <id>github-starter</id>" \
+"            <username>$(cat /run/secrets/gpr_user)</username>" \
+"            <password>$(cat /run/secrets/gpr_key)</password>" \
+"        </server>" \
+"        <server>" \
+"            <id>github-bom</id>" \
+"            <username>$(cat /run/secrets/gpr_user)</username>" \
+"            <password>$(cat /run/secrets/gpr_key)</password>" \
+"        </server>" \
+"        <server>" \
+"            <id>github-observability</id>" \
+"            <username>$(cat /run/secrets/gpr_user)</username>" \
+"            <password>$(cat /run/secrets/gpr_key)</password>" \
+"        </server>" \
+"        <server>" \
+"            <id>github-kafka</id>" \
+"            <username>$(cat /run/secrets/gpr_user)</username>" \
+"            <password>$(cat /run/secrets/gpr_key)</password>" \
+"        </server>" \
+"        <server>" \
+"            <id>github-logger</id>" \
+"            <username>$(cat /run/secrets/gpr_user)</username>" \
+"            <password>$(cat /run/secrets/gpr_key)</password>" \
+"        </server>" \
+"    </servers>" \
+"</settings>" \
+> /root/.m2/settings.xml
 
 # Copy Maven wrapper + build descriptors first for better layer caching
 COPY mvnw pom.xml ./
