@@ -16,30 +16,30 @@
  */
 /** Conventional Commit rules for Omnixys ecosystem */
 export default {
-  extends: ['@commitlint/config-conventional'],
-  formatter: './.extras/scripts/commitlint-formatter.js',
+  extends: ["@commitlint/config-conventional"],
+  formatter: "./.extras/scripts/commitlint-formatter.js",
   rules: {
-    'type-enum': [
+    "type-enum": [
       2,
-      'always',
+      "always",
       [
-        'build',
-        'chore',
-        'ci',
-        'docs',
-        'feat',
-        'fix',
-        'perf',
-        'refactor',
-        'revert',
-        'style',
-        'test',
-        'breaking',
+        "build",
+        "chore",
+        "ci",
+        "docs",
+        "feat",
+        "fix",
+        "perf",
+        "refactor",
+        "revert",
+        "style",
+        "test",
+        "breaking",
       ],
     ],
-    'scope-case': [2, 'always', 'lower-case'],
-    'subject-case': [1, 'always', ['sentence-case', 'lower-case']],
-    'header-max-length': [2, 'always', 100],
+    "scope-case": [2, "always", "lower-case"],
+    "subject-case": [1, "always", ["sentence-case", "lower-case"]],
+    "header-max-length": [2, "always", 100],
 
     /**
      * 🔴 REQUIRE at least one issue reference

@@ -15,60 +15,89 @@ server:
       enabled: false
   shutdown: graceful
 
-management:
-  observations:
-    key-values:
-      service.name: address-service
-
-  opentelemetry:
-    resource-attributes:
-      service.name: address
-    tracing:
-      exporter:
-        otlp:
-          enabled: true
-  metrics:
-    enable:
-      all: true
-  endpoints:
-    health:
-      probes:
-        enabled: true
-    prometheus:
-      enabled: true
-    web:
-      exposure:
-        include:
-          - prometheus
-          - health
-          - info
-          - metrics
-  tracing:
-    enabled: true
-    propagation:
-      type: w3c
-    sampling:
-      probability: 1.0
-  otlp:
-    tracing:
-      transport: http
-      endpoint: http://${app.tracing.tempo}:4318/v1/traces
-
+#management:
+#  observations:
+#    key-values:
+#      service.name: address-service
+#
+#  opentelemetry:
+#    resource-attributes:
+#      service.name: address
+#    tracing:
+#      exporter:
+#        otlp:
+#          enabled: true
+#  metrics:
+#    enable:
+#      all: true
+#  endpoints:
+#    health:
+#      probes:
+#        enabled: true
+#    prometheus:
+#      enabled: true
+#    web:
+#      exposure:
+#        include:
+#          - prometheus
+#          - health
+#          - info
+#          - metrics
+#  tracing:
+#    enabled: true
+#    propagation:
+#      type: w3c
+#    sampling:
+#      probability: 1.0
+#  otlp:
+#    tracing:
+#      transport: http
+#      endpoint: http://${app.tracing.tempo}:4318/v1/traces
+#
 
 omnixys:
   observability:
+    metrics:
+      prometheus-enabled: true
+    enabled: true
     service-name: address
+
+    tracing:
+      enabled: true
+      sampling-probability: 1.0
+
+    otlp:
+      endpoint: http://${app.tracing.tempo}:4318/v1/traces
+
+  kafka:
+    enabled: true
+
+    bootstrap-servers: ${app.kafka.host}:${app.kafka.port}
+    client-id: address-service
+    group-id: address-consumer
+    topics:
+        - authentication.create.addresses
+        - authentication.delete.addresses
+
+    consumer:
+      auto-commit: true
+      concurrency: 3
+
+    producer:
+      acks: all
+
+  logger:
+    enabled: true
+    service-name: address
+
     kafka:
       enabled: true
-      default-topic: address.send.logstream
+      topic: logstream.input
+
     batch:
       enabled: true
-  kafka:
-    bootstrap-servers: ${app.kafka.host}:${app.kafka.port}
-    enabled: true
-    topics: authentication.create.addresses, authentication.delete.addresses
-    group-id: address-consumer
-    client-id: address-service
+      max-size: 200
+      flush-interval-ms: 100
 
 # Spring Boot Einstellungen
 spring:

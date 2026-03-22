@@ -52,7 +52,7 @@ export default {
       {
         preset: "conventionalcommits",
         releaseRules: [
-          { breaking: true, release: "major" },
+          { type: "breaking", release: "major" },
           { type: "feat", release: "minor" },
           { type: "fix", release: "patch" },
           { type: "perf", release: "patch" },
@@ -123,23 +123,23 @@ export default {
     ],
 
     /**
-     * 🔥 THIS is what you were missing
-     * Updates package.json version
+     * 🔥 VERSION UPDATE IN pom.xml
      */
     [
-      "@semantic-release/npm",
+      "@semantic-release/exec",
       {
-        npmPublish: false,
+        prepareCmd:
+          "mvn versions:set -DnewVersion=${nextRelease.version} -DgenerateBackupPoms=false",
       },
     ],
 
     /**
-     * Commit release artifacts back to repository
+     * Commit updated pom.xml
      */
     [
       "@semantic-release/git",
       {
-        assets: ["package.json", "pnpm-lock.yaml", "CHANGELOG.md"],
+        assets: ["pom.xml", "CHANGELOG.md"],
         message:
           "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
       },
@@ -153,22 +153,31 @@ export default {
       {
         assets: [
           { path: "CHANGELOG.md", label: "Changelog" },
-          { path: "dist/**", label: "Build Artifacts" },
+          { path: "target/*.jar", label: "JAR Artifact" },
         ],
 
         releaseBodyTemplate: `
-Today, we are excited to share the **v{{version}}** release 🎉
+        # 🚀 Release v<%= nextRelease.version %>
+---
 
-This release includes stability improvements, bug fixes, and internal refinements for the **User Service**.
+## 📦 Changes
+
+<%= nextRelease.notes %>
 
 ---
 
-{{body}}
+## 🔎 Release Details
+
+- Git Tag: <%= nextRelease.gitTag %>
+- Branch: <%= branch.name %>
+- Previous Version: <%= lastRelease ? lastRelease.version : 'N/A' %>
+- Commit: <%= nextRelease.gitHead.substring(0, 7) %>
 
 ---
 
-📦 **Service:** Omnixys Address Service  
-🔗 **Repository:** https://github.com/omnixys/address-service  
+🏢 **Organization:** Omnixys
+📦 **Service:** Address
+🔗 **Repository:** Repository: <%= options.repositoryUrl %>
 🧭 **Docs:** https://omnixys.com/docs
 `,
       },

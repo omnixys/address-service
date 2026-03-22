@@ -3,7 +3,7 @@ package com.omnixys.address.services;
 import com.omnixys.address.models.entity.Country;
 import com.omnixys.address.models.inputs.CountryFilterInput;
 import com.omnixys.address.repository.CountryRepository;
-import com.omnixys.observability.logging.OmnixysLogger;
+import com.omnixys.logger.logging.OmnixysLogger;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import lombok.RequiredArgsConstructor;
@@ -60,14 +60,7 @@ public class CountryService {
 
     public Country findByName(String name) {
 
-        var logs = logger.child("country.findByName");
-
-        logs.debug("Creating user", Map.of("userId", 123));
-
-
-
-//        logger.info("Fetching country by name", Map.of("name",name));
-
+        logger.debug("find Country By Name name={}", name);
 
         return countryRepository.findByName(name)
                 .orElseThrow(() -> {

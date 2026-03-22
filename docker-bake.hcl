@@ -53,9 +53,16 @@ target "build" {
   dockerfile = "./Dockerfile"
   context = "."
 
-    secret = [
-    "id=omnixys_token,src=.secrets/omnixys_token"
-  ]
+   secret = [
+      {
+        id  = "gpr_user"
+        src = ".secrets/gpr_user"
+      },
+      {
+        id  = "gpr_key"
+        src = ".secrets/gpr_key"
+      }
+    ]
 
   args = {
     JAVA_VERSION = "${JAVA_VERSION}"
