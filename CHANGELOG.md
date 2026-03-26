@@ -3,6 +3,16 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.0.0](https://github.com/omnixys/address-service/compare/v2.0.18...v3.0.0) (2026-03-26)
+
+### Address
+
+* **Address:** Add OTEL support, bump BOM, enable AOP ([](https://github.com/omnixys/address-service/commit/1832900b638079b42d19b93ce32c9505f817d4de))
+
+### Other
+
+* **Other:** Merge branch 'main' of https://github.com/omnixys/address-service ([](https://github.com/omnixys/address-service/commit/3d28c96704c7dba1722898cf9caed492a7327bd8))
+
 ## [2.0.18](https://github.com/omnixys/address-service/compare/v2.0.17...v2.0.18) (2026-03-22)
 
 ### Dockerfile
