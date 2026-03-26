@@ -33,21 +33,6 @@ RUN --mount=type=secret,id=gpr_user \
 "            <username>$(cat /run/secrets/gpr_user)</username>" \
 "            <password>$(cat /run/secrets/gpr_key)</password>" \
 "        </server>" \
-"        <server>" \
-"            <id>github-observability</id>" \
-"            <username>$(cat /run/secrets/gpr_user)</username>" \
-"            <password>$(cat /run/secrets/gpr_key)</password>" \
-"        </server>" \
-"        <server>" \
-"            <id>github-kafka</id>" \
-"            <username>$(cat /run/secrets/gpr_user)</username>" \
-"            <password>$(cat /run/secrets/gpr_key)</password>" \
-"        </server>" \
-"        <server>" \
-"            <id>github-logger</id>" \
-"            <username>$(cat /run/secrets/gpr_user)</username>" \
-"            <password>$(cat /run/secrets/gpr_key)</password>" \
-"        </server>" \
 "    </servers>" \
 "</settings>" \
 > /root/.m2/settings.xml
@@ -111,9 +96,9 @@ ENV OTEL_AGENT_PATH=/otel/opentelemetry-javaagent.jar
 
 RUN if [ "$OTEL_AGENT_ENABLED" = "true" ]; then \
       mkdir -p /otel && \
-      curl -L -o ${OTEL_AGENT_PATH} \
+      wget -O ${OTEL_AGENT_PATH} \
       https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar ; \
-    fi \
+    fi
 
 # Kopiere extrahierte Spring Boot-Schichten (Layered JAR-Struktur)
 COPY --from=builder --chown=app:app /source/dependencies/ /source/spring-boot-loader/ /source/application/ ./
@@ -134,21 +119,12 @@ HEALTHCHECK --interval=30s --timeout=3s --retries=1 \
 # Start Spring Boot über Spring Boot Launcher (Layer-Modus)
 # ENTRYPOINT ["dumb-init", "java", "--enable-preview", "org.springframework.boot.loader.launch.JarLauncher"]
 
-ENTRYPOINT [
-  "dumb-init",
-  "java",
-  "--enable-preview",
-  "-javaagent:/otel/opentelemetry-javaagent.jar",
-  "-Dotel.service.name=${OTEL_SERVICE_NAME}",
-  "-Dotel.exporter.otlp.endpoint=${OTEL_EXPORTER_OTLP_ENDPOINT}",
-  "org.springframework.boot.loader.launch.JarLauncher"
+ENTRYPOINT [ \
+  "dumb-init", \
+  "java", \
+  "--enable-preview", \
+  "-javaagent:/otel/opentelemetry-javaagent.jar", \
+  "-Dotel.service.name=${OTEL_SERVICE_NAME}", \
+  "-Dotel.exporter.otlp.endpoint=${OTEL_EXPORTER_OTLP_ENDPOINT}", \
+  "org.springframework.boot.loader.launch.JarLauncher" \
 ]
-
-ENTRYPOINT ["sh", "-c", "\
-JAVA_AGENT=\"\" && \
-if [ \"$OTEL_ENABLED\" = \"true\" ]; then \
-  JAVA_AGENT=\"-javaagent:${OTEL_AGENT_PATH} -Dotel.service.name=${OTEL_SERVICE_NAME} -Dotel.exporter.otlp.endpoint=${OTEL_EXPORTER_OTLP_ENDPOINT}\"; \
-fi && \
-exec dumb-init java --enable-preview $JAVA_AGENT $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher \
-"]
-
