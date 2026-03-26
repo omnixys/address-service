@@ -63,6 +63,10 @@ omnixys:
     service-name: address
 
     tracing:
+      graphql:
+        enabled: true
+      http:
+        enabled: true
       enabled: true
       sampling-probability: 1.0
 

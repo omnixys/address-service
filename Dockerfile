@@ -103,15 +103,27 @@ RUN apt-get update && \
     apt-get install --no-install-recommends --yes dumb-init=1.2.5-2 wget && \
     apt-get autoremove -y && \
     apt-get clean -y && \
-    rm -rf /var/lib/apt/lists/* /tmp/* && \
-    groupadd --gid 1000 app && \
+    rm -rf /var/lib/apt/lists/* /tmp/*
+
+# ---- optional OTEL agent download ----
+ARG OTEL_AGENT_ENABLED=true
+ENV OTEL_AGENT_PATH=/otel/opentelemetry-javaagent.jar
+
+RUN if [ "$OTEL_AGENT_ENABLED" = "true" ]; then \
+      mkdir -p /otel && \
+      curl -L -o ${OTEL_AGENT_PATH} \
+      https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar ; \
+    fi \
+
+# Kopiere extrahierte Spring Boot-Schichten (Layered JAR-Struktur)
+COPY --from=builder --chown=app:app /source/dependencies/ /source/spring-boot-loader/ /source/application/ ./
+
+# ---- user ----
+RUN groupadd --gid 1000 app && \
     useradd --uid 1000 --gid app --no-create-home app && \
     chown -R app:app /workspace
 
 USER app
-
-# Kopiere extrahierte Spring Boot-Schichten (Layered JAR-Struktur)
-COPY --from=builder --chown=app:app /source/dependencies/ /source/spring-boot-loader/ /source/application/ ./
 
 EXPOSE 8080
 
@@ -120,5 +132,23 @@ HEALTHCHECK --interval=30s --timeout=3s --retries=1 \
   CMD wget -qO- --no-check-certificate https://localhost:8080/actuator/health/ | grep UP || exit 1
 
 # Start Spring Boot über Spring Boot Launcher (Layer-Modus)
-ENTRYPOINT ["dumb-init", "java", "--enable-preview", "org.springframework.boot.loader.launch.JarLauncher"]
+# ENTRYPOINT ["dumb-init", "java", "--enable-preview", "org.springframework.boot.loader.launch.JarLauncher"]
+
+ENTRYPOINT [
+  "dumb-init",
+  "java",
+  "--enable-preview",
+  "-javaagent:/otel/opentelemetry-javaagent.jar",
+  "-Dotel.service.name=${OTEL_SERVICE_NAME}",
+  "-Dotel.exporter.otlp.endpoint=${OTEL_EXPORTER_OTLP_ENDPOINT}",
+  "org.springframework.boot.loader.launch.JarLauncher"
+]
+
+ENTRYPOINT ["sh", "-c", "\
+JAVA_AGENT=\"\" && \
+if [ \"$OTEL_ENABLED\" = \"true\" ]; then \
+  JAVA_AGENT=\"-javaagent:${OTEL_AGENT_PATH} -Dotel.service.name=${OTEL_SERVICE_NAME} -Dotel.exporter.otlp.endpoint=${OTEL_EXPORTER_OTLP_ENDPOINT}\"; \
+fi && \
+exec dumb-init java --enable-preview $JAVA_AGENT $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher \
+"]
 
