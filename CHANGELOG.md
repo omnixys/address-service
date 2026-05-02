@@ -3,6 +3,12 @@
 All notable changes in this project will be documented in this file.
 
 
+## [4.0.0](https://github.com/omnixys/address-service/compare/v3.0.1...v4.0.0) (2026-05-02)
+
+### Test
+
+* **Test:** Add EventAddress feature, resolvers & events ([](https://github.com/omnixys/address-service/commit/672dfe480c804133f86f00d4bf9acfd7d2c96e51))
+
 ## [3.0.1](https://github.com/omnixys/address-service/compare/v3.0.0...v3.0.1) (2026-03-26)
 
 ### Dockerfile
