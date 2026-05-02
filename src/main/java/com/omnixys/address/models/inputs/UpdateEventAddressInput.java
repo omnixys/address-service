@@ -1,16 +1,16 @@
 package com.omnixys.address.models.inputs;
 
-import com.omnixys.address.models.enums.AddressType;
-
 import java.util.UUID;
 
-public record CreateEventAddressInput(
+public record UpdateEventAddressInput(
+        UUID id,
         UUID eventId,
-        UUID streetId,
-        UUID houseNumberId,
+        String street,
+        String houseNumber,
         UUID postalCodeId,
         UUID cityId,
         UUID stateId,
         UUID countryId,
         String additionalInfo
-) {}
+) {
+}

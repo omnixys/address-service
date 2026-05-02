@@ -93,6 +93,13 @@ RUN apt-get update && \
 # ---- optional OTEL agent download ----
 ARG OTEL_AGENT_ENABLED=true
 ENV OTEL_AGENT_PATH=/otel/opentelemetry-javaagent.jar
+ENV OTEL_SERVICE_NAME=${APP_NAME}-service
+ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+ENV OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+ENV OTEL_RESOURCE_ATTRIBUTES=service.version=1.0.0,service.namespace=omnixys
+ENV OTEL_LOGS_EXPORTER=otlp
+ENV OTEL_METRICS_EXPORTER=otlp
+ENV OTEL_TRACES_EXPORTER=otlp
 
 RUN if [ "$OTEL_AGENT_ENABLED" = "true" ]; then \
       mkdir -p /otel && \
@@ -119,12 +126,19 @@ HEALTHCHECK --interval=30s --timeout=3s --retries=1 \
 # Start Spring Boot über Spring Boot Launcher (Layer-Modus)
 # ENTRYPOINT ["dumb-init", "java", "--enable-preview", "org.springframework.boot.loader.launch.JarLauncher"]
 
-ENTRYPOINT [ \
-  "dumb-init", \
-  "java", \
-  "--enable-preview", \
-  "-javaagent:/otel/opentelemetry-javaagent.jar", \
-  "-Dotel.service.name=${OTEL_SERVICE_NAME}", \
-  "-Dotel.exporter.otlp.endpoint=${OTEL_EXPORTER_OTLP_ENDPOINT}", \
-  "org.springframework.boot.loader.launch.JarLauncher" \
-]
+# ENTRYPOINT [ \
+#   "dumb-init", \
+#   "java", \
+#   "--enable-preview", \
+#   "-javaagent:/otel/opentelemetry-javaagent.jar", \
+#   "-Dotel.service.name=${OTEL_SERVICE_NAME}", \
+#   "-Dotel.exporter.otlp.endpoint=${OTEL_EXPORTER_OTLP_ENDPOINT}", \
+#   "org.springframework.boot.loader.launch.JarLauncher" \
+# ]
+
+ENTRYPOINT ["sh", "-c", "\
+exec dumb-init java \
+$JAVA_OPTS \
+$( [ -f /otel/opentelemetry-javaagent.jar ] && echo \"-javaagent:/otel/opentelemetry-javaagent.jar\" ) \
+org.springframework.boot.loader.launch.JarLauncher \
+"]

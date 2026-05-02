@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS address.event_address (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    event_id      UUID NOT NULL,
+    event_id      UUID NOT NULL UNIQUE,
 
     country_id      UUID NOT NULL
     REFERENCES address.country(id)

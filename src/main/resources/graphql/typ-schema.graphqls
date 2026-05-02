@@ -168,6 +168,25 @@ type AddressAutocompletePayload {
     lon: Float
 }
 
+type GeoLocationInfo {
+    lat: Float
+    lon: Float
+
+    countryId: ID!
+    stateId: ID!
+    cityId: ID!
+    postalCodeId: ID!
+    streetId: ID!
+    houseNumberId: ID!
+
+    country: String
+    state: String
+    city: String
+    postalCode: String
+    street: String
+    houseNumber: String
+}
+
 enum AddressType {
     HOME
     WORK
@@ -217,3 +236,36 @@ type HouseNumber {
     id: ID!
     number: String!
 }
+
+type EventAddressPayload {
+    id: ID!
+    eventId: ID!
+
+    country: String
+    state: String
+    city: String
+    postalCode: String
+    street: String
+    houseNumber: String
+
+    additionalInfo: String
+
+    lat: Float
+    lon: Float
+}
+
+type EventAddress {
+    id: ID!
+    eventId: ID!
+
+    countryId: ID!
+    stateId: ID!
+    cityId: ID!
+    postalCodeId: ID!
+    streetId: ID!
+    houseNumberId: ID!
+
+    additionalInfo: String
+}
+
+

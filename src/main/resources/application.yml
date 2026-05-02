@@ -82,6 +82,8 @@ omnixys:
     topics:
         - authentication.create.addresses
         - authentication.delete.addresses
+        - event.create.addresses
+        - event.delete.addresses
 
     consumer:
       auto-commit: true

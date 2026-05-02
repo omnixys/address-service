@@ -1,9 +1,10 @@
 package com.omnixys.address.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.omnixys.address.models.dto.AddUserAddressesDTO;
+import com.omnixys.address.models.dto.DeleteEventAddressDTO;
 import com.omnixys.address.models.dto.DeleteUserAddressesDTO;
-import com.omnixys.address.services.UserAddressService;
+import com.omnixys.address.models.inputs.CreateEventAddressDTO;
+import com.omnixys.address.services.EventAddressService;
 import com.omnixys.kafka.annotation.KafkaEvent;
 import com.omnixys.kafka.model.KafkaEnvelope;
 import com.omnixys.logger.logging.OmnixysLogger;
@@ -12,35 +13,35 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class AuthenticationHandler {
+public class EventHandler {
 
-    private final UserAddressService userAddressService;
+    private final EventAddressService eventAddressService;
     private final ObjectMapper objectMapper;
     private final OmnixysLogger log;
 
-    @KafkaEvent(topic = "authentication.create.addresses")
+    @KafkaEvent(topic = "event.create.address")
     public void handleCreate(KafkaEnvelope<?> envelope) {;
 
         log.info("Processing event: {}", envelope);
 
-        AddUserAddressesDTO dto = objectMapper.convertValue(
+        CreateEventAddressDTO dto = objectMapper.convertValue(
                 envelope.payload(),
-                AddUserAddressesDTO.class
+                CreateEventAddressDTO.class
         );
 
-        userAddressService.createUserAddresses(dto);
+        eventAddressService.createEventAddress(dto);
     }
 
-    @KafkaEvent(topic = "authentication.delete.addresses")
+    @KafkaEvent(topic = "event.delete.address")
     public void handleDelete(KafkaEnvelope<?> envelope) {
 
         log.info("Processing event: {}", envelope);
 
-        DeleteUserAddressesDTO dto = objectMapper.convertValue(
+        DeleteEventAddressDTO dto = objectMapper.convertValue(
                 envelope.payload(),
-                DeleteUserAddressesDTO.class
+                DeleteEventAddressDTO.class
         );
 
-        userAddressService.deleteUserAddressByUserId(dto.userId());
+        eventAddressService.deleteEventAddressByEventId(dto.eventId());
     }
 }

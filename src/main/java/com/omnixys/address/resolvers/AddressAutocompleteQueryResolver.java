@@ -1,6 +1,8 @@
 package com.omnixys.address.resolvers;
 
 import com.omnixys.address.models.payload.AddressAutocompletePayload;
+import com.omnixys.address.models.payload.GeoLocationInfo;
+import com.omnixys.address.services.CountryService;
 import com.omnixys.address.services.GeoapifyAutocompleteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,4 +30,18 @@ public class AddressAutocompleteQueryResolver {
 
         return autocompleteService.autocomplete(text, countryCode, limit);
     }
-}
+
+    @QueryMapping
+    public GeoLocationInfo getGeoLocationInfo(
+            @Argument String text,
+            @Argument String countryCode,
+            @Argument Integer limit
+    ) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("GraphQL addressAutocomplete called: text='{}'", text);
+        }
+
+        return autocompleteService.getGeoLocationInfo(text, countryCode, limit);
+    }
+    }

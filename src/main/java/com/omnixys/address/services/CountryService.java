@@ -4,14 +4,12 @@ import com.omnixys.address.models.entity.Country;
 import com.omnixys.address.models.inputs.CountryFilterInput;
 import com.omnixys.address.repository.CountryRepository;
 import com.omnixys.logger.logging.OmnixysLogger;
-import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

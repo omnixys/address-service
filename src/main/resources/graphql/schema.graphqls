@@ -22,19 +22,31 @@ type Query {
     getHouseNumberByName(name: String!): HouseNumber
 
     validateAddress(input: AddressValidationInput!): AddressValidationPayload!
+
     addressAutocomplete(
         text: String!
         countryCode: String
         limit: Int
     ): [AddressAutocompletePayload!]!
+    getGeoLocationInfo(
+        text: String!
+        countryCode: String
+        limit: Int): GeoLocationInfo
 
     userAddressById(id: ID!): UserAddress
     getUserAddressesByUserId(userId: ID!): [UserAddressPayload!]!
     userAddresses(filter: UserAddressFilter): [UserAddress!]!
+
+    eventAddressById(id: ID!): EventAddress
+    getEventAddressByEventId(eventId: ID!): EventAddressPayload
 }
 
 type Mutation {
     createUserAddress(input: CreateUserAddressInput!): UserAddress!
     updateUserAddress(input: UpdateUserAddressInput!): UserAddress!
     deleteUserAddressByUserId(userId: ID!): Boolean!
+
+    createEventAddress(input: CreateEventAddressInput!): EventAddressPayload!
+    updateEventAddress(input: UpdateEventAddressInput!): EventAddressPayload!
+    deleteEventAddressByEventId(eventId: ID!): Boolean!
 }

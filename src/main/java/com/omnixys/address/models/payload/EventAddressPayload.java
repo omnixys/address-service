@@ -1,5 +1,6 @@
 package com.omnixys.address.models.payload;
 
+import com.omnixys.address.models.entity.EventAddress;
 import com.omnixys.address.models.enums.AddressType;
 
 import java.util.UUID;
@@ -13,6 +14,8 @@ public record EventAddressPayload(
         String postalCode,
         String street,
         String houseNumber,
-        String additionalInfo
+        String additionalInfo,
+        Double lat,
+        Double lon
 ) {
 }

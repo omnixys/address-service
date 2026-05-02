@@ -6,6 +6,7 @@ import com.omnixys.address.models.entity.HouseNumber;
 import com.omnixys.address.models.entity.PostalCode;
 import com.omnixys.address.models.entity.Street;
 import com.omnixys.address.models.payload.AddressAutocompletePayload;
+import com.omnixys.address.models.payload.GeoLocationInfo;
 import com.omnixys.address.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -34,11 +36,19 @@ public class GeoapifyAutocompleteService {
 
     private final RestClient restClient = RestClient.create();
 
+    private final PostalCodeService postalCodeService;
+    private final CityService cityService;
+    private final StreetService streetService;
+    private final HouseNumberService houseNumberService;
+    private final CountryService countryService;
+    private final StateService stateService;
+
     private final PostalCodeRepository postalCodeRepository;
     private final CityRepository cityRepository;
     private final StreetRepository streetRepository;
     private final HouseNumberRepository houseNumberRepository;
     private final CountryRepository countryRepository;
+    private final StateRepository stateRepository;
 
     @Value("${app.geoapify.apiKey}")
     private String apiKey;
@@ -129,6 +139,94 @@ public class GeoapifyAutocompleteService {
 
         log.debug("Autocomplete returned {} results.", payloads.size());
         return payloads;
+    }
+
+    @Transactional
+    public GeoLocationInfo getGeoLocationInfo(
+            final String text,
+            final String countryCode,
+            final Integer limit
+    ) {
+        log.debug("GraphQL getGeoLocationInfo called: text='{}'", text);
+
+        var suggestion = autocomplete(text, countryCode, limit)
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+        if (suggestion == null) {
+            log.debug("No address found for text='{}'", text);
+            return null;
+        }
+
+        /**
+         * -------------------------------------------------------------
+         * STEP 1: Normalize incoming data
+         * -------------------------------------------------------------
+         */
+        String countryName = suggestion.country();
+        String stateName = suggestion.state();
+        String cityName = suggestion.city();
+        String postalCode = suggestion.postalCode();
+        String streetName = suggestion.street();
+        String houseNumber = suggestion.houseNumber();
+
+        /**
+         * -------------------------------------------------------------
+         * STEP 2: Resolve DB entities (IMPORTANT)
+         * -------------------------------------------------------------
+         */
+        var country = countryService.findByName(countryName);
+
+        var state = stateService.findByNameAndCountryId(
+                stateName,
+                country.getId()
+
+        );
+
+        var city = cityService.findByNameAndStateId(
+                cityName,
+                state.getId()
+        );
+
+        var postal = postalCodeService.findByCodeAndCityId(
+                postalCode,
+                city.getId()
+        );
+
+        var street = streetService.findByNameAndCityId(
+                streetName,
+                city.getId()
+        );
+
+        var house = houseNumberService.findByHouseNumberAndStreetId(
+                houseNumber,
+                street.getId()
+        );
+
+        /**
+         * -------------------------------------------------------------
+         * STEP 3: RETURN FULL STRUCTURE
+         * -------------------------------------------------------------
+         */
+        return new GeoLocationInfo(
+                suggestion.lat(),
+                suggestion.lon(),
+
+                country.getId(),
+                state != null ? state.getId() : null,
+                city.getId(),
+                postal != null ? postal.getId() : null,
+                street.getId(),
+                house.getId(),
+
+                country.getName(),
+                state.getName(),
+                city.getName(),
+                postal != null ? postal.getCode(): null,
+                street.getName(),
+                house.getNumber()
+        );
     }
 
     /**
