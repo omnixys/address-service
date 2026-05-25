@@ -3,6 +3,12 @@
 All notable changes in this project will be documented in this file.
 
 
+## [1.0.1](https://github.com/omnixys/address-service/compare/v1.0.0...v1.0.1) (2026-05-25)
+
+### Docker
+
+* **Docker:** Dockerfile ([](https://github.com/omnixys/address-service/commit/25fd3c5c170a704f2b6bcef146122f2d39b8b481))
+
 ## 1.0.0 (2026-05-02)
 
 ### Add auth
