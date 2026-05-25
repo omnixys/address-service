@@ -2,11 +2,11 @@
 -- STATE
 -- =====================================================
 
-CREATE TABLE IF NOT EXISTS address.state (
+CREATE TABLE IF NOT EXISTS state (
                                              id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     country_id      UUID NOT NULL
-    REFERENCES address.country(id)
+    REFERENCES country(id)
     ON DELETE CASCADE,
 
     code            VARCHAR(20) NOT NULL,          -- BDS
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS address.state (
     type            VARCHAR(100),                  -- province, state, region
     level           INTEGER,                       -- hierarchy level
     parent_id       UUID
-    REFERENCES address.state(id)
+    REFERENCES state(id)
     ON DELETE SET NULL,
 
     latitude        DECIMAL(10,8),
@@ -38,43 +38,43 @@ CREATE TABLE IF NOT EXISTS address.state (
 
 -- Fast lookup by country
 CREATE INDEX IF NOT EXISTS idx_state_country
-    ON address.state(country_id);
+    ON state(country_id);
 
 -- Hierarchy
 CREATE INDEX IF NOT EXISTS idx_state_parent
-    ON address.state(parent_id);
+    ON state(parent_id);
 
 -- ISO lookup
 CREATE INDEX IF NOT EXISTS idx_state_iso3166
-    ON address.state(iso3166_2);
+    ON state(iso3166_2);
 
 -- Name search (requires pg_trgm extension)
 CREATE INDEX IF NOT EXISTS idx_state_name_trgm
-    ON address.state
+    ON state
     USING GIN (name gin_trgm_ops);
 
 -- Optional but recommended for filters
 CREATE INDEX IF NOT EXISTS idx_state_code
-    ON address.state(code);
+    ON state(code);
 
 -- =====================================================
 -- STATE ↔ TIMEZONE (ManyToMany)
 -- =====================================================
 
-CREATE TABLE IF NOT EXISTS address.state_timezone (
+CREATE TABLE IF NOT EXISTS state_timezone (
                                                       state_id       UUID NOT NULL
-                                                      REFERENCES address.state(id)
+                                                      REFERENCES state(id)
     ON DELETE CASCADE,
 
     timezone_id    UUID NOT NULL
-    REFERENCES address.timezone(id)
+    REFERENCES timezone(id)
     ON DELETE CASCADE,
 
     PRIMARY KEY (state_id, timezone_id)
     );
 
 CREATE INDEX IF NOT EXISTS idx_state_timezone_state
-    ON address.state_timezone(state_id);
+    ON state_timezone(state_id);
 
 CREATE INDEX IF NOT EXISTS idx_state_timezone_timezone
-    ON address.state_timezone(timezone_id);
+    ON state_timezone(timezone_id);

@@ -1,26 +1,26 @@
 
-CREATE TABLE IF NOT EXISTS address.continent (
+CREATE TABLE IF NOT EXISTS continent (
                                                  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name        VARCHAR(100) NOT NULL UNIQUE,
     code        VARCHAR(10) UNIQUE, -- EU, AF, NA, SA, AS, OC, AN
     created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
-CREATE INDEX IF NOT EXISTS idx_continent_code ON address.continent(code);
+CREATE INDEX IF NOT EXISTS idx_continent_code ON continent(code);
 
 
-CREATE TABLE IF NOT EXISTS address.subregion (
+CREATE TABLE IF NOT EXISTS subregion (
                                                  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name          VARCHAR(150) NOT NULL,
-    continent_id  UUID NOT NULL REFERENCES address.continent(id) ON DELETE RESTRICT,
+    continent_id  UUID NOT NULL REFERENCES continent(id) ON DELETE RESTRICT,
     created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uq_subregion UNIQUE (name, continent_id)
     );
-CREATE INDEX IF NOT EXISTS idx_subregion_continent ON address.subregion(continent_id);
+CREATE INDEX IF NOT EXISTS idx_subregion_continent ON subregion(continent_id);
 
 
-CREATE TABLE IF NOT EXISTS address.currency (
+CREATE TABLE IF NOT EXISTS currency (
                                                 id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name        VARCHAR(100) NOT NULL,
     code        CHAR(3) NOT NULL UNIQUE,
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS address.currency (
     );
 
 
-CREATE TABLE IF NOT EXISTS address.language (
+CREATE TABLE IF NOT EXISTS language (
                                                 id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name        VARCHAR(100) NOT NULL,
     iso2        CHAR(2) UNIQUE,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS address.language (
     );
 
 
-CREATE TABLE IF NOT EXISTS address.timezone (
+CREATE TABLE IF NOT EXISTS timezone (
                                                 id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     zone_name       VARCHAR(150) NOT NULL UNIQUE, -- Europe/Berlin
@@ -52,10 +52,10 @@ CREATE TABLE IF NOT EXISTS address.timezone (
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
-CREATE INDEX IF NOT EXISTS idx_timezone_zone_name ON address.timezone(zone_name);
+CREATE INDEX IF NOT EXISTS idx_timezone_zone_name ON timezone(zone_name);
 
 
-CREATE TABLE IF NOT EXISTS address.calling_code (
+CREATE TABLE IF NOT EXISTS calling_code (
                                                     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     code        VARCHAR(10) NOT NULL UNIQUE, -- +49
     created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS address.calling_code (
     );
 
 
-CREATE TABLE IF NOT EXISTS address.country (
+CREATE TABLE IF NOT EXISTS country (
                                                id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     name          TEXT NOT NULL,
@@ -83,28 +83,28 @@ CREATE TABLE IF NOT EXISTS address.country (
     latitude      DECIMAL(10,8),
     longitude     DECIMAL(11,8),
 
-    currency_id UUID REFERENCES address.currency(id),
-    calling_code_id UUID REFERENCES address.calling_code(id),
+    currency_id UUID REFERENCES currency(id),
+    calling_code_id UUID REFERENCES calling_code(id),
 
-    continent_id  UUID NOT NULL REFERENCES address.continent(id) ON DELETE RESTRICT,
-    subregion_id  UUID NOT NULL REFERENCES address.subregion(id) ON DELETE RESTRICT,
+    continent_id  UUID NOT NULL REFERENCES continent(id) ON DELETE RESTRICT,
+    subregion_id  UUID NOT NULL REFERENCES subregion(id) ON DELETE RESTRICT,
 
     created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
-CREATE INDEX IF NOT EXISTS idx_country_continent ON address.country(continent_id);
-CREATE INDEX IF NOT EXISTS idx_country_subregion ON address.country(subregion_id);
+CREATE INDEX IF NOT EXISTS idx_country_continent ON country(continent_id);
+CREATE INDEX IF NOT EXISTS idx_country_subregion ON country(subregion_id);
 
 
-CREATE TABLE IF NOT EXISTS address.country_timezone (
-                                                        country_id  UUID REFERENCES address.country(id) ON DELETE CASCADE,
-    timezone_id UUID REFERENCES address.timezone(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS country_timezone (
+                                                        country_id  UUID REFERENCES country(id) ON DELETE CASCADE,
+    timezone_id UUID REFERENCES timezone(id) ON DELETE CASCADE,
     PRIMARY KEY (country_id, timezone_id)
     );
 
 
-CREATE TABLE IF NOT EXISTS address.country_language (
-                                                        country_id  UUID REFERENCES address.country(id) ON DELETE CASCADE,
-    language_id UUID REFERENCES address.language(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS country_language (
+                                                        country_id  UUID REFERENCES country(id) ON DELETE CASCADE,
+    language_id UUID REFERENCES language(id) ON DELETE CASCADE,
     PRIMARY KEY (country_id, language_id)
     );

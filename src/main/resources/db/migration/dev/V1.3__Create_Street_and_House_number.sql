@@ -4,11 +4,11 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 -- STREET
 -- =========================
 
-CREATE TABLE IF NOT EXISTS address.street (
+CREATE TABLE IF NOT EXISTS street (
                                               id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     city_id      UUID NOT NULL
-    REFERENCES address.city(id)
+    REFERENCES city(id)
     ON DELETE CASCADE,
 
     name         TEXT NOT NULL,
@@ -20,27 +20,27 @@ CREATE TABLE IF NOT EXISTS address.street (
 
 -- Case-insensitive uniqueness
 CREATE UNIQUE INDEX IF NOT EXISTS uq_street_city_name_ci
-    ON address.street (city_id, lower(name));
+    ON street (city_id, lower(name));
 
 CREATE INDEX IF NOT EXISTS idx_street_city
-    ON address.street (city_id);
+    ON street (city_id);
 
 CREATE INDEX IF NOT EXISTS idx_street_name_trgm
-    ON address.street USING GIN (name gin_trgm_ops);
+    ON street USING GIN (name gin_trgm_ops);
 
 CREATE INDEX IF NOT EXISTS idx_street_location
-    ON address.street USING GIST (location);
+    ON street USING GIST (location);
 
 
 -- =========================
 -- HOUSE_NUMBER
 -- =========================
 
-CREATE TABLE IF NOT EXISTS address.house_number (
+CREATE TABLE IF NOT EXISTS house_number (
                                                     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     street_id    UUID NOT NULL
-    REFERENCES address.street(id)
+    REFERENCES street(id)
     ON DELETE CASCADE,
 
     number       VARCHAR(20) NOT NULL,
@@ -52,13 +52,13 @@ CREATE TABLE IF NOT EXISTS address.house_number (
 
 -- Case-insensitive uniqueness
 CREATE UNIQUE INDEX IF NOT EXISTS uq_house_number_ci
-    ON address.house_number (street_id, lower(number));
+    ON house_number (street_id, lower(number));
 
 CREATE INDEX IF NOT EXISTS idx_house_number_street
-    ON address.house_number (street_id);
+    ON house_number (street_id);
 
 CREATE INDEX IF NOT EXISTS idx_house_number_location
-    ON address.house_number USING GIST (location);
+    ON house_number USING GIST (location);
 
 CREATE INDEX IF NOT EXISTS idx_house_number_number_trgm
-    ON address.house_number USING GIN (number gin_trgm_ops);
+    ON house_number USING GIN (number gin_trgm_ops);
