@@ -3,6 +3,12 @@
 All notable changes in this project will be documented in this file.
 
 
+## [1.0.3](https://github.com/omnixys/address-service/compare/v1.0.2...v1.0.3) (2026-05-26)
+
+### Sql
+
+* **Sql:** remove schema ([](https://github.com/omnixys/address-service/commit/82e66f403ab35be0bff29dab31fbe85574e42383))
+
 ## [1.0.2](https://github.com/omnixys/address-service/compare/v1.0.1...v1.0.2) (2026-05-26)
 
 ### Sql
