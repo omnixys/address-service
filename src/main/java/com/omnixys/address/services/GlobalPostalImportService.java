@@ -65,10 +65,10 @@ public class GlobalPostalImportService {
     private void importCitiesJson(Connection connection, ClassPathResource resource) throws Exception {
 
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute("DROP TABLE IF EXISTS address.staging_city_json");
+            stmt.execute("DROP TABLE IF EXISTS staging_city_json");
 
             stmt.execute("""
-            CREATE TABLE address.staging_city_json (
+            CREATE TABLE staging_city_json (
                 country_code VARCHAR(2),
                 state_code   VARCHAR(20),
                 name         TEXT,
@@ -106,7 +106,7 @@ public class GlobalPostalImportService {
 
         try (Reader reader = new StringReader(sb.toString())) {
             copy.copyIn("""
-            COPY address.staging_city_json
+            COPY staging_city_json
             FROM STDIN
             WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
         """, reader);
@@ -119,7 +119,7 @@ public class GlobalPostalImportService {
 
             // 1️⃣ INSERT neue Städte
             stmt.execute("""
-            INSERT INTO address.city
+            INSERT INTO city
                 (state_id, name, location, population, timezone_id, type, level)
             SELECT
                 st.id,
@@ -132,32 +132,32 @@ public class GlobalPostalImportService {
                 tz.id,
                 s.type,
                 s.level
-            FROM address.staging_city_json s
-            JOIN address.country c
+            FROM staging_city_json s
+            JOIN country c
               ON c.iso2 = s.country_code
-            JOIN address.state st
+            JOIN state st
               ON st.country_id = c.id
              AND st.code = s.state_code
-            LEFT JOIN address.timezone tz
+            LEFT JOIN timezone tz
               ON tz.zone_name = s.timezone
             ON CONFLICT DO NOTHING
         """);
 
             // 2️⃣ UPDATE existierende Städte (case-insensitive)
             stmt.execute("""
-            UPDATE address.city ci
+            UPDATE city ci
             SET
                 population  = s.population,
                 timezone_id = tz.id,
                 type        = s.type,
                 level       = s.level
-            FROM address.staging_city_json s
-            JOIN address.country c
+            FROM staging_city_json s
+            JOIN country c
               ON c.iso2 = s.country_code
-            JOIN address.state st
+            JOIN state st
               ON st.country_id = c.id
              AND st.code = s.state_code
-            LEFT JOIN address.timezone tz
+            LEFT JOIN timezone tz
               ON tz.zone_name = s.timezone
             WHERE ci.state_id = st.id
               AND lower(ci.name) = lower(s.name)
@@ -170,13 +170,13 @@ public class GlobalPostalImportService {
         try (Statement stmt = connection.createStatement()) {
 
             stmt.execute("""
-            INSERT INTO address.state (country_id, code, name)
+            INSERT INTO state (country_id, code, name)
             SELECT DISTINCT
                 c.id,
                 s.admin_code1,
                 s.admin_name1
-            FROM address.staging_postal s
-            JOIN address.country c
+            FROM staging_postal s
+            JOIN country c
               ON c.iso2 = s.country_code
             WHERE
                 s.admin_name1 IS NOT NULL
@@ -191,7 +191,7 @@ public class GlobalPostalImportService {
         try (Statement stmt = connection.createStatement()) {
 
             stmt.execute("""
-            INSERT INTO address.postal_code
+            INSERT INTO postal_code
                 (country_id, city_id, code, location, accuracy)
             SELECT
                 c.id,
@@ -203,13 +203,13 @@ public class GlobalPostalImportService {
                     THEN ST_SetSRID(ST_MakePoint(s.longitude, s.latitude), 4326)::geography
                 END,
                 s.accuracy
-            FROM address.staging_postal s
-            JOIN address.country c
+            FROM staging_postal s
+            JOIN country c
               ON c.iso2 = s.country_code
-            JOIN address.state st
+            JOIN state st
               ON st.country_id = c.id
              AND st.code = s.admin_code1
-            JOIN address.city ci
+            JOIN city ci
               ON ci.state_id = st.id
              AND lower(ci.name) = lower(s.place_name)
             WHERE s.postal_code IS NOT NULL
@@ -222,10 +222,10 @@ public class GlobalPostalImportService {
     private void importGeoNamesCity(Connection connection, ClassPathResource resource) throws Exception {
 
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute("DROP TABLE IF EXISTS address.staging_postal");
+            stmt.execute("DROP TABLE IF EXISTS staging_postal");
 
             stmt.execute("""
-            CREATE TABLE address.staging_postal (
+            CREATE TABLE staging_postal (
                 country_code VARCHAR(2),
                 postal_code VARCHAR(20),
                 place_name VARCHAR(180),
@@ -248,7 +248,7 @@ public class GlobalPostalImportService {
         // JAR/Docker safe: read from classpath stream
         try (Reader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)) {
             copy.copyIn("""
-                COPY address.staging_postal
+                COPY staging_postal
                 FROM STDIN
                 WITH (FORMAT csv, DELIMITER E'\\t')
             """, reader);
@@ -257,8 +257,8 @@ public class GlobalPostalImportService {
 
     private void dropStagingTables(Connection connection) throws Exception {
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute("DROP TABLE IF EXISTS address.staging_postal");
-            stmt.execute("DROP TABLE IF EXISTS address.staging_city_json");
+            stmt.execute("DROP TABLE IF EXISTS staging_postal");
+            stmt.execute("DROP TABLE IF EXISTS staging_city_json");
         }
     }
 
