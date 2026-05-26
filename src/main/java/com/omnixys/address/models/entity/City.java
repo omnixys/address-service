@@ -19,7 +19,6 @@ import org.locationtech.jts.geom.Point;
 @Entity
 @Table(
         name = "city",
-        schema = "address",
         indexes = {
                 @Index(name = "idx_city_state", columnList = "state_id"),
                 @Index(name = "idx_city_population_not_null", columnList = "population"),

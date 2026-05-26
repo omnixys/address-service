@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "timezone", schema = "address")
+@Table(name = "timezone")
 @Getter
 @Setter
 @NoArgsConstructor

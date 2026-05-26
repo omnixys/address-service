@@ -13,7 +13,6 @@ import jakarta.persistence.Table;
 @Entity
 @Table(
         name = "state",
-        schema = "address",
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uq_state_country_code",
@@ -49,7 +48,6 @@ public class State extends BaseEntity {
     @ManyToMany
     @JoinTable(
             name = "state_timezone",
-            schema = "address",
             joinColumns = @JoinColumn(name = "state_id"),
             inverseJoinColumns = @JoinColumn(name = "timezone_id")
     )

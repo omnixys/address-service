@@ -9,7 +9,7 @@ import org.hibernate.type.SqlTypes;
 import java.util.UUID;
 
 @Entity
-@Table(name = "event_address", schema = "address")
+@Table(name = "event_address")
 @Getter
 @Setter
 @NoArgsConstructor

@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "country", schema = "address")
+@Table(name = "country")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -80,7 +80,6 @@ public class Country extends BaseEntity {
     @ManyToMany
     @JoinTable(
             name = "country_language",
-            schema = "address",
             joinColumns = @JoinColumn(name = "country_id"),
             inverseJoinColumns = @JoinColumn(name = "language_id")
     )
@@ -89,7 +88,6 @@ public class Country extends BaseEntity {
     @ManyToMany
     @JoinTable(
             name = "country_timezone",
-            schema = "address",
             joinColumns = @JoinColumn(name = "country_id"),
             inverseJoinColumns = @JoinColumn(name = "timezone_id")
     )

@@ -18,7 +18,6 @@ import org.locationtech.jts.geom.Point;
 @Entity
 @Table(
         name = "postal_code",
-        schema = "address",
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uq_postal",

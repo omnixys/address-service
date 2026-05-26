@@ -13,7 +13,6 @@ import java.util.UUID;
 @Entity
 @Table(
         name = "house_number",
-        schema = "address",
         indexes = {
                 @Index(name = "idx_house_number_street", columnList = "street_id"),
                 @Index(name = "idx_house_number_location", columnList = "location")
