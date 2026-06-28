@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.14.0
 
-ARG JAVA_VERSION=25
+ARG JAVA_VERSION=26
 
 # ---------------------------------------------------------------------------------------
 # Stage 1: builder (Maven Build)
@@ -52,11 +52,12 @@ RUN ./mvnw dependency:go-offline -B || true
 # Now copy sources
 COPY src ./src
 
-# Extract Spring Boot layers (Boot 4.x)
+# Extract Spring Boot layers (Boot 4.x) in separates Verzeichnis
 RUN ./mvnw package spring-boot:repackage -Dmaven.test.skip=true -Dspring-boot.build-image.skip=true
-RUN JAR_FILE=$(ls ./target/*.jar | grep -v 'original' | head -n 1) && \
+RUN mkdir -p /layers && \
+    JAR_FILE=$(ls ./target/*.jar | grep -v 'original' | head -n 1) && \
     echo "Extracting $JAR_FILE" && \
-    java -Djarmode=layertools -jar "$JAR_FILE" extract
+    java -Djarmode=tools -jar "$JAR_FILE" extract --launcher --layers dependencies,spring-boot-loader,snapshot-dependencies,application --destination /layers
 
 # ---------------------------------------------------------------------------------------
 # Stage 2: final (Production image with JRE)
@@ -107,13 +108,19 @@ RUN if [ "$OTEL_AGENT_ENABLED" = "true" ]; then \
       https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar ; \
     fi
 
-# Kopiere extrahierte Spring Boot-Schichten (Layered JAR-Struktur)
-COPY --from=builder --chown=app:app /source/dependencies/ /source/spring-boot-loader/ /source/application/ ./
-
 # ---- user ----
 RUN groupadd --gid 1000 app && \
-    useradd --uid 1000 --gid app --no-create-home app && \
-    chown -R app:app /workspace
+    useradd --uid 1000 --gid app --no-create-home app
+
+# Kopiere extrahierte Spring Boot-Schichten (Layered JAR-Struktur)
+# Dependencies ändern sich selten → separater Layer für besseres Caching
+COPY --from=builder --chown=1000:1000 /layers/dependencies/ ./
+# Spring Boot Loader + Snapshot-Dependencies (seltene Änderungen)
+COPY --from=builder --chown=1000:1000 /layers/spring-boot-loader/ /layers/snapshot-dependencies/ ./
+# Application Code (häufigste Änderungen)
+COPY --from=builder --chown=1000:1000 /layers/application/ ./
+
+RUN chown -R app:app /workspace
 
 USER app
 
@@ -138,6 +145,7 @@ HEALTHCHECK --interval=30s --timeout=3s --retries=1 \
 
 ENTRYPOINT ["sh", "-c", "\
 exec dumb-init java \
+--enable-preview \
 $JAVA_OPTS \
 $( [ -f /otel/opentelemetry-javaagent.jar ] && echo \"-javaagent:/otel/opentelemetry-javaagent.jar\" ) \
 org.springframework.boot.loader.launch.JarLauncher \

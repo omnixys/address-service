@@ -1,6 +1,6 @@
 package com.omnixys.address.kafka;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.omnixys.address.models.dto.DeleteEventAddressDTO;
 import com.omnixys.address.models.dto.DeleteUserAddressesDTO;
 import com.omnixys.address.models.inputs.CreateEventAddressDTO;

@@ -33,7 +33,7 @@ public class UserAddressService {
     private final PostalCodeService postalCodeService;
     private final StreetService streetService;
     private final HouseNumberService houseNumberService;
-    private final ValkeyService valkeyService;
+    private final AddressCacheService addressCacheService;
 
 //    private final KafkaPublisherService kafkaPublisherService;
 
@@ -61,7 +61,7 @@ public class UserAddressService {
 
         log.debug("Creating addresses from signup token");
 
-        var tokenData = valkeyService.getSignupAddressToken(dto.token());
+        var tokenData = addressCacheService.getSignupAddressToken(dto.token());
 
         var userId = dto.userId();
 
@@ -88,7 +88,7 @@ public class UserAddressService {
 
         log.debug("Added UserAddresses for UserId {}= {}", userId, result);
 
-        valkeyService.deleteToken(dto.token());
+        addressCacheService.deleteToken(dto.token());
     }
 
     @Transactional

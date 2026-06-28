@@ -5,6 +5,7 @@ import com.omnixys.address.models.payload.AddressValidationPayload;
 import com.omnixys.address.services.GeoapifyAddressValidationService;
 import graphql.schema.DataFetchingEnvironment;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -24,7 +25,7 @@ public class AddressValidationQueryResolver {
      * - valid only if Geoapify returns exactly 1 result and confidence == 1
      */
     @QueryMapping
-    public AddressValidationPayload validateAddress(@Argument AddressValidationInput input) {
+    public AddressValidationPayload validateAddress(@Argument @Valid AddressValidationInput input) {
 
         log.debug("GraphQL validateAddress called: street='{}', house='{}', zip='{}', city='{}', state='{}', country='{}'",
                 input != null ? input.street() : null,

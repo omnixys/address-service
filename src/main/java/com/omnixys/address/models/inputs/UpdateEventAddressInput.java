@@ -1,10 +1,12 @@
 package com.omnixys.address.models.inputs;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.util.UUID;
 
 public record UpdateEventAddressInput(
-        UUID id,
-        UUID eventId,
+        @NotNull UUID id,
+        @NotNull UUID eventId,
         String street,
         String houseNumber,
         UUID postalCodeId,

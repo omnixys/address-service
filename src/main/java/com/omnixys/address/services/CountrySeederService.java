@@ -1,7 +1,7 @@
 package com.omnixys.address.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import com.omnixys.address.models.dto.CountryDTO;
 import com.omnixys.address.models.dto.CountryDetailsDTO;
 import com.omnixys.address.models.entity.*;
@@ -34,6 +34,8 @@ public class CountrySeederService {
     private final LanguageRepository languageRepository;
     private final TimezoneRepository timezoneRepository;
     private final CallingCodeRepository callingCodeRepository;
+
+    private final ObjectMapper objectMapper;
 
     @PersistenceContext
     private EntityManager em;
@@ -125,14 +127,12 @@ public class CountrySeederService {
     private Map<String, CountryDetailsDTO> loadCountryDetails() {
 
         try {
-            ObjectMapper mapper = new ObjectMapper();
-
             InputStream is =
                     new ClassPathResource("data/countries.json")
                             .getInputStream();
 
             List<CountryDetailsDTO> list =
-                    mapper.readValue(is, new TypeReference<>() {});
+                    objectMapper.readValue(is, new TypeReference<>() {});
 
             return list.stream()
                     .filter(d -> d.iso2() != null)

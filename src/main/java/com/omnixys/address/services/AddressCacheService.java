@@ -1,32 +1,26 @@
 package com.omnixys.address.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
 import com.omnixys.address.models.dto.SignupAddressCacheDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-
 @Service
 @RequiredArgsConstructor
-public class ValkeyService {
+public class AddressCacheService {
+
+    private static final String SIGNUP_TOKEN_PREFIX = "verification:signup:address:";
 
     private final StringRedisTemplate redisTemplate;
-    private final ObjectMapper objectMapper =
-            new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper objectMapper;
 
     public SignupAddressCacheDTO getSignupAddressToken(String token) {
-
-        String key = "verification:signup:address:" + token;
-
+        String key = SIGNUP_TOKEN_PREFIX + token;
         String json = redisTemplate.opsForValue().get(key);
-
         if (json == null) {
             throw new IllegalArgumentException("Signup token expired or invalid");
         }
-
         try {
             return objectMapper.readValue(json, SignupAddressCacheDTO.class);
         } catch (Exception e) {
@@ -35,19 +29,6 @@ public class ValkeyService {
     }
 
     public void deleteToken(String token) {
-        redisTemplate.delete("verification:signup:address:" + token);
+        redisTemplate.delete(SIGNUP_TOKEN_PREFIX + token);
     }
-
-    public String get(String key) {
-        return redisTemplate.opsForValue().get(key);
-    }
-
-    public void set(String key, String value, Duration ttl) {
-        redisTemplate.opsForValue().set(key, value, ttl);
-    }
-
-    public void delete(String key) {
-        redisTemplate.delete(key);
-    }
-
 }

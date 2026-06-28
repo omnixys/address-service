@@ -1,7 +1,7 @@
 package com.omnixys.address.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import com.omnixys.address.models.dto.StateDTO;
 import com.omnixys.address.models.entity.*;
 import com.omnixys.address.repository.*;
@@ -28,6 +28,8 @@ public class StateSeederService {
     private final CountryRepository countryRepository;
     private final StateRepository stateRepository;
     private final TimezoneRepository timezoneRepository;
+
+    private final ObjectMapper objectMapper;
 
     @PersistenceContext
     private EntityManager em;
@@ -156,13 +158,11 @@ public class StateSeederService {
     private List<StateDTO> loadStatesFromJson() {
 
         try {
-            ObjectMapper mapper = new ObjectMapper();
-
             InputStream is =
                     new ClassPathResource("data/states.json")
                             .getInputStream();
 
-            return mapper.readValue(is, new TypeReference<>() {});
+            return objectMapper.readValue(is, new TypeReference<>() {});
 
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load states.json", e);

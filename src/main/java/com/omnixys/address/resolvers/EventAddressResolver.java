@@ -5,6 +5,7 @@ import com.omnixys.address.models.inputs.CreateEventAddressInput;
 import com.omnixys.address.models.inputs.UpdateEventAddressInput;
 import com.omnixys.address.models.payload.EventAddressPayload;
 import com.omnixys.address.services.EventAddressService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -24,12 +25,12 @@ public class EventAddressResolver {
 
 
     @MutationMapping
-    public EventAddressPayload createEventAddress(@Argument CreateEventAddressInput input) {
+    public EventAddressPayload createEventAddress(@Argument @Valid CreateEventAddressInput input) {
         return service.createEventAddress(input);
     }
 
     @MutationMapping
-    public EventAddressPayload updateEventAddress(@Argument UpdateEventAddressInput input) {
+    public EventAddressPayload updateEventAddress(@Argument @Valid UpdateEventAddressInput input) {
         return service.updateEventAddress(input);
     }
 

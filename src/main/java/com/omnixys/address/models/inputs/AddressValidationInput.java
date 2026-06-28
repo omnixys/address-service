@@ -1,10 +1,12 @@
 package com.omnixys.address.models.inputs;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record AddressValidationInput(
-        String street,
+        @NotBlank String street,
         String houseNumber,
-        String postalCode,
-        String city,
+        @NotBlank String postalCode,
+        @NotBlank String city,
         String state,
-        String country
+        @NotBlank String country
 ) {}

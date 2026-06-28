@@ -6,6 +6,7 @@ import com.omnixys.address.models.inputs.UpdateUserAddressInput;
 import com.omnixys.address.models.inputs.UserAddressFilter;
 import com.omnixys.address.models.payload.UserAddressPayload;
 import com.omnixys.address.services.UserAddressService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -25,12 +26,12 @@ public class UserAddressResolver {
 
 
     @MutationMapping
-    public UserAddress createUserAddress(@Argument CreateUserAddressInput input) {
+    public UserAddress createUserAddress(@Argument @Valid CreateUserAddressInput input) {
         return service.createUserAddress(input);
     }
 
     @MutationMapping
-    public UserAddress updateUserAddress(@Argument UpdateUserAddressInput input) {
+    public UserAddress updateUserAddress(@Argument @Valid UpdateUserAddressInput input) {
         return service.updateUserAddress(input);
     }
 

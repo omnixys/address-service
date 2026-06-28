@@ -6,10 +6,6 @@ spring:
           batch_size: 1000
         order_inserts: true
         order_updates: true
-  datasource:
-    #    url: ${app.postgres.url}
-    #    username: ${app.postgres.username}
-    #    password: ${app.postgres.password}
     hikari:
       connection-init-sql: SET search_path TO address, public;
       connection-timeout: 10000 # Default: 30_000 = 30 Sekunden
@@ -20,35 +16,18 @@ spring:
   flyway:
     enabled: true
     clean-disabled: false
-    locations: classpath:db/migration/dev
-
-  devtools:
-    livereload:
-      enabled: true
-    restart:
-      trigger-file: .reloadtrigger
+    locations: classpath:db/migration/prod
 
   config:
     activate:
-      on-profile: dev
-
-  ssl:
-    bundle:
-      pem:
-        microservice:
-          reload-on-update: true
-          keystore:
-            private-key: "${app.keys.path}/key.pem"
-            certificate: "${app.keys.path}/certificate.crt"
-          truststore:
-            certificate: "${app.keys.path}/certificate.crt"
+      on-profile: prod
 
 # Applikationsspezifische Einstellungen
 app:
   geoapify:
     apiKey: ${GEOAPIFY_KEY}
   seed:
-    enabled: true
+    enabled: false
   states:
     api:
       key: ${CSC_API_KEY}
@@ -67,4 +46,4 @@ app:
     enabled: ${HTTPS:true}
 
   ssl:
-    enabled: ${HTTPS:true}
+    enabled: false
