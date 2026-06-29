@@ -185,9 +185,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.OMNIXYS_TOKEN }}
         run: |
-          echo "DEBUG VERSION=$CURRENT_VERSION"
+          echo "DEBUG VERSION=$VERSION"
           gh variable set CURRENT_VERSION \
-            --body "$CURRENT_VERSION" \
+            --body "$VERSION" \
             --repo omnixys/${{ vars.SERVICE }}-service
 
       - name: Update org variable
@@ -195,7 +195,7 @@ jobs:
           GH_TOKEN: ${{ secrets.OMNIXYS_TOKEN }}
         run: |
           gh variable set CURRENT_DATE \
-            --body "$CURRENT_DATE" \
+            --body "$DATE" \
             --org omnixys \
             --visibility all
 
