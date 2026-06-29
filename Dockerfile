@@ -95,8 +95,7 @@ RUN apt-get update && \
 ARG OTEL_AGENT_ENABLED=true
 ENV OTEL_AGENT_PATH=/otel/opentelemetry-javaagent.jar
 ENV OTEL_SERVICE_NAME=${APP_NAME}-service
-ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-ENV OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
 ENV OTEL_RESOURCE_ATTRIBUTES=service.version=${APP_VERSION},service.namespace=omnixys
 ENV OTEL_LOGS_EXPORTER=otlp
 ENV OTEL_METRICS_EXPORTER=otlp
