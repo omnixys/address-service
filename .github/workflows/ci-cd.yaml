@@ -180,26 +180,6 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "date=$DATE" >> "$GITHUB_OUTPUT"
 
-
-      - name: Update repo variable
-        env:
-          GH_TOKEN: ${{ secrets.OMNIXYS_TOKEN }}
-        run: |
-          echo "DEBUG VERSION=$VERSION"
-          gh variable set CURRENT_VERSION \
-            --body "$VERSION" \
-            --repo omnixys/${{ vars.SERVICE }}-service
-
-      - name: Update org variable
-        env:
-          GH_TOKEN: ${{ secrets.OMNIXYS_TOKEN }}
-        run: |
-          gh variable set CURRENT_DATE \
-            --body "$DATE" \
-            --org omnixys \
-            --visibility all
-
-
   push-docker:
     name: 🐳 Build & Push Multi-Arch Images (Docker)
     runs-on: ubuntu-latest
