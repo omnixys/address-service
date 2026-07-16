@@ -100,6 +100,7 @@ ENV OTEL_RESOURCE_ATTRIBUTES=service.version=${APP_VERSION},service.namespace=om
 ENV OTEL_LOGS_EXPORTER=otlp
 ENV OTEL_METRICS_EXPORTER=otlp
 ENV OTEL_TRACES_EXPORTER=otlp
+ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:MaxDirectMemorySize=128m"
 
 RUN if [ "$OTEL_AGENT_ENABLED" = "true" ]; then \
       mkdir -p /otel && \
@@ -127,7 +128,7 @@ EXPOSE 8080
 
 # Healthcheck für Container-Management (z. B. Docker, Kubernetes)
 HEALTHCHECK --interval=30s --timeout=3s --retries=1 \
-  CMD wget -qO- --no-check-certificate https://localhost:8080/actuator/health/ | grep UP || exit 1
+  CMD wget -q --spider http://localhost:8080/actuator/health/readiness || exit 1
 
 # Start Spring Boot über Spring Boot Launcher (Layer-Modus)
 # ENTRYPOINT ["dumb-init", "java", "--enable-preview", "org.springframework.boot.loader.launch.JarLauncher"]

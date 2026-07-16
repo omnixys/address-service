@@ -42,6 +42,6 @@ public class EventHandler {
                 DeleteEventAddressDTO.class
         );
 
-        eventAddressService.deleteEventAddressByEventId(dto.eventId());
+        eventAddressService.deleteEventAddressesByEventIds(dto.normalizedEventIds());
     }
 }

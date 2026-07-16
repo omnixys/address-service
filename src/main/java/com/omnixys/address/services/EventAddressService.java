@@ -7,12 +7,14 @@ import com.omnixys.address.models.inputs.CreateEventAddressInput;
 import com.omnixys.address.models.inputs.UpdateEventAddressInput;
 import com.omnixys.address.models.payload.EventAddressPayload;
 import com.omnixys.address.repository.EventAddressRepository;
+import com.omnixys.address.repository.EventAddressProjection;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -102,8 +104,29 @@ public class EventAddressService {
 
 
     public Boolean deleteEventAddressByEventId(UUID eventId) {
+        if (eventId == null) {
+            throw new IllegalArgumentException("eventId must not be null");
+        }
         log.debug("Deleting event addresses for eventId={}", eventId);
         repository.deleteByEventId(eventId);
+        return true;
+    }
+
+    public Boolean deleteEventAddressesByEventIds(Collection<UUID> eventIds) {
+        if (eventIds == null) {
+            throw new IllegalArgumentException("eventIds must not be null");
+        }
+
+        var validEventIds = eventIds.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (validEventIds.isEmpty()) {
+            throw new IllegalArgumentException("At least one eventId is required");
+        }
+
+        log.debug("Deleting event addresses for eventIds={}", validEventIds);
+        validEventIds.forEach(repository::deleteByEventId);
         return true;
     }
 
@@ -117,8 +140,8 @@ public class EventAddressService {
     @Transactional(readOnly = true)
     public EventAddressPayload findByEventId(UUID eventId) {
 
-        return repository.findRawByEventId(eventId)
-                .map(this::mapSingle)
+        return repository.findProjectedByEventId(eventId)
+                .map(this::toPayload)
                 .orElseThrow(() -> new AddressNotFoundException(eventId));
     }
 
@@ -164,31 +187,25 @@ public class EventAddressService {
     private EventAddressPayload getSinglePayload(UUID id) {
 
         return repository.findById(id)
-                .map(a -> repository.findRawByEventId(a.getEventId())
-                        .map(this::mapSingle)
+                .map(a -> repository.findProjectedByEventId(a.getEventId())
+                        .map(this::toPayload)
                         .orElseThrow(() -> new AddressNotFoundException(id)))
                 .orElseThrow(() -> new AddressNotFoundException(id));
     }
 
-    public EventAddressPayload mapSingle(Object[] r) {
-
-        // 🔥 FIX: unwrap nested result
-        if (r.length == 1 && r[0] instanceof Object[]) {
-            r = (Object[]) r[0];
-        }
-
+    private EventAddressPayload toPayload(EventAddressProjection projection) {
         return new EventAddressPayload(
-                (UUID) r[0],
-                (UUID) r[1],
-                (String) r[2],
-                (String) r[3],
-                (String) r[4],
-                (String) r[5],
-                (String) r[6],
-                (String) r[7],
-                (String) r[8],
-                r[9] != null ? ((Number) r[9]).doubleValue() : null,
-                r[10] != null ? ((Number) r[10]).doubleValue() : null
+                projection.getId(),
+                projection.getEventId(),
+                projection.getCountry(),
+                projection.getState(),
+                projection.getCity(),
+                projection.getPostalCode(),
+                projection.getStreet(),
+                projection.getHouseNumber(),
+                projection.getAdditionalInfo(),
+                projection.getLat(),
+                projection.getLon()
         );
     }
 }

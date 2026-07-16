@@ -1,14 +1,12 @@
 package com.omnixys.address.repository;
 
 import com.omnixys.address.models.entity.EventAddress;
-import com.omnixys.address.models.payload.EventAddressPayload;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,17 +49,17 @@ public interface EventAddressRepository extends JpaRepository<EventAddress, UUID
      */
     @Query(value = """
         SELECT
-            ea.id,
-            ea.event_id,
-            c.name,
-            s.name,
-            ci.name,
-            pc.code,
-            st.name,
-            hn.number,
-            ea.additional_info,
-    ST_Y(COALESCE(hn.location, st.location)::geometry) AS lat,
-    ST_X(COALESCE(hn.location, st.location)::geometry) AS lon
+            ea.id AS id,
+            ea.event_id AS "eventId",
+            c.name AS country,
+            s.name AS state,
+            ci.name AS city,
+            pc.code AS "postalCode",
+            st.name AS street,
+            hn.number AS "houseNumber",
+            ea.additional_info AS "additionalInfo",
+            ST_Y(COALESCE(hn.location, st.location)::geometry) AS lat,
+            ST_X(COALESCE(hn.location, st.location)::geometry) AS lon
         FROM event_address ea
         LEFT JOIN country c ON c.id = ea.country_id
         LEFT JOIN state s ON s.id = ea.state_id
@@ -72,5 +70,5 @@ public interface EventAddressRepository extends JpaRepository<EventAddress, UUID
         WHERE ea.event_id = :eventId
         LIMIT 1
     """, nativeQuery = true)
-    Optional<Object[]> findRawByEventId(UUID eventId);
+    Optional<EventAddressProjection> findProjectedByEventId(UUID eventId);
 }
