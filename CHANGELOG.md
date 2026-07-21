@@ -3,6 +3,8 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.1.0](https://github.com/omnixys/address-service/compare/v3.0.0...v3.1.0) (2026-07-21)
+
 ## [3.0.0](https://github.com/omnixys/address-service/compare/v2.0.4...v3.0.0) (2026-07-17)
 
 ## [2.0.4](https://github.com/omnixys/address-service/compare/v2.0.3...v2.0.4) (2026-06-29)
