@@ -268,4 +268,12 @@ type EventAddress {
     additionalInfo: String
 }
 
+# =====================================================
+# SEED PAYLOAD
+# =====================================================
+
+type SeedPayload {
+    message: String!
+    success: Boolean!
+}
 

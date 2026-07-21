@@ -16,11 +16,11 @@ spring:
   flyway:
     enabled: true
     clean-disabled: false
-    locations: classpath:db/migration/prod
+    locations: classpath:db/migration/production
 
   config:
     activate:
-      on-profile: prod
+      on-profile: production
 
 # Applikationsspezifische Einstellungen
 app:

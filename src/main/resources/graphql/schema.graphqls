@@ -49,4 +49,8 @@ type Mutation {
     createEventAddress(input: CreateEventAddressInput!): EventAddressPayload!
     updateEventAddress(input: UpdateEventAddressInput!): EventAddressPayload!
     deleteEventAddressByEventId(eventId: ID!): Boolean!
+
+    seedCountries: SeedPayload!
+    seedStates: SeedPayload!
+    seedPostalCodes: SeedPayload!
 }
