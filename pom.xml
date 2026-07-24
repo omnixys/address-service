@@ -45,7 +45,7 @@
         <enable.preview>--enable-preview</enable.preview>
         <hibernate-processor.version>8.0.0.Alpha1</hibernate-processor.version>
         <federation-graphql-java-support.version>6.0.0</federation-graphql-java-support.version>
-        <omnixys.bom.version>1.0.0</omnixys.bom.version>
+        <omnixys.bom.version>1.0.1</omnixys.bom.version>
         <protobuf-java.version>4.32.0</protobuf-java.version>
     </properties>
 

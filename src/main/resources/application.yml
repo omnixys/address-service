@@ -64,6 +64,13 @@ omnixys:
       prometheus-enabled: true
     enabled: true
     service-name: address
+    resource-attributes:
+      service.namespace: omnixys
+      service.version: ${spring.application.version}
+      deployment.environment.name: ${app.env}
+
+    logs:
+      enabled: true
 
     tracing:
       graphql:
@@ -74,7 +81,8 @@ omnixys:
       sampling-probability: 1.0
 
     otlp:
-      endpoint: http://${app.tracing.tempo}:4318/v1/traces
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}
+      transport: ${OTEL_EXPORTER_OTLP_PROTOCOL:http}
 
   kafka:
     enabled: true
@@ -98,15 +106,6 @@ omnixys:
   logger:
     enabled: true
     service-name: address
-
-    kafka:
-      enabled: true
-      topic: logstream.input
-
-    batch:
-      enabled: true
-      max-size: 200
-      flush-interval-ms: 100
 
 # Spring Boot Einstellungen
 spring:
@@ -203,21 +202,9 @@ app:
 
 # Logging-Konfiguration
 logging:
-  file.name: ./tmp/application.log
-  logback:
-    rollingpolicy:
-      file-name-pattern: ${logging.file.name}.%d{yyyy-MM-dd}.%i.gz
-      max-file-size: 100KB
-      max-history: 3
-  pattern:
-    console: >
-      %clr(%date{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}){faint} %clr(%5level) %clr(${PID:- }){magenta}
-      %clr(---){faint} %clr([%15.15thread]){faint} %clr(%-40.40logger{39}){cyan}
-      %clr( [traceId=%X{traceId} spanId=%X{spanId}]){faint}
-      %clr(:){faint} %msg%n%wEx
-    file: >
-      %date{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %5level ${PID:- } --- [%thread]
-      %-40.40logger{39} [traceId=%X{traceId} spanId=%X{spanId}] : %m%n%wEx
+  structured:
+    format:
+      console: ecs
   level:
     com.omnixys.address: trace
 
