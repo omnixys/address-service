@@ -9,6 +9,8 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -53,6 +55,27 @@ public class SeedGraphqlController {
         } catch (Exception e) {
             log.error("Failed to import postal codes", e);
             return Map.of("message", "Failed to import postal codes: " + e.getMessage(), "success", false);
+        }
+    }
+
+    @MutationMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public Map<String, Object> seedAll() {
+        List<String> completed = new ArrayList<>();
+        try {
+            countrySeederService.seedCountries();
+            completed.add("countries");
+
+            stateSeederService.seedStates();
+            completed.add("states");
+
+            globalPostalImportService.importAll();
+            completed.add("postal_codes");
+
+            return Map.of("message", "Seeded: " + completed, "success", true);
+        } catch (Exception e) {
+            log.error("Seed orchestration failed after {}", completed, e);
+            return Map.of("message", "Failed at step after " + completed + ": " + e.getMessage(), "success", false);
         }
     }
 }

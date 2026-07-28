@@ -100,7 +100,7 @@ ENV OTEL_RESOURCE_ATTRIBUTES=service.version=${APP_VERSION},service.namespace=om
 ENV OTEL_LOGS_EXPORTER=otlp
 ENV OTEL_METRICS_EXPORTER=otlp
 ENV OTEL_TRACES_EXPORTER=otlp
-ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:MaxDirectMemorySize=128m"
+ENV JAVA_OPTS="-Xms256m -Xmx1g -XX:MaxDirectMemorySize=128m"
 
 RUN if [ "$OTEL_AGENT_ENABLED" = "true" ]; then \
       mkdir -p /otel && \

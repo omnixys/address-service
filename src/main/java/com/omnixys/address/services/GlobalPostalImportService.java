@@ -1,5 +1,6 @@
 package com.omnixys.address.services;
 
+import tools.jackson.core.JsonToken;
 import tools.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,19 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Statement;
-
-import tools.jackson.core.type.TypeReference;
-
-import java.io.StringReader;
-import java.util.List;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
@@ -82,34 +75,81 @@ public class GlobalPostalImportService {
         """);
         }
 
-        List<Map<String,Object>> cities =
-                objectMapper.readValue(resource.getInputStream(), new TypeReference<>() {});
-
-        StringBuilder sb = new StringBuilder();
-
-        for (Map<String,Object> city : cities) {
-
-            sb.append(val(city.get("country_code"))).append("\t")
-                    .append(val(city.get("state_code"))).append("\t")
-                    .append(val(city.get("name"))).append("\t")
-                    .append(val(city.get("latitude"))).append("\t")
-                    .append(val(city.get("longitude"))).append("\t")
-                    .append(val(city.get("population"))).append("\t")
-                    .append(val(city.get("timezone"))).append("\t")
-                    .append(val(city.get("type"))).append("\t")
-                    .append(val(city.get("level")))
-                    .append("\n");
-        }
-
         PGConnection pg = connection.unwrap(PGConnection.class);
         CopyManager copy = pg.getCopyAPI();
 
-        try (Reader reader = new StringReader(sb.toString())) {
-            copy.copyIn("""
-            COPY staging_city_json
-            FROM STDIN
-            WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
-        """, reader);
+        try (PipedInputStream pipedIn = new PipedInputStream(1 << 16)) {
+
+            final var writeError = new AtomicReference<RuntimeException>();
+
+            Thread writerThread = Thread.ofVirtual().start(() -> {
+                try (PipedOutputStream pipedOut = new PipedOutputStream(pipedIn);
+                     var parser = objectMapper.createParser(resource.getInputStream());
+                     var writer = new BufferedWriter(new OutputStreamWriter(pipedOut, StandardCharsets.UTF_8))) {
+
+                    parser.nextToken(); // START_ARRAY
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        String countryCode = null, stateCode = null, name = null,
+                               latitude = null, longitude = null,
+                               population = null, timezone = null, type = null,
+                               level = null;
+
+                        parser.nextToken(); // first PROPERTY_NAME
+                        while (parser.currentToken() != JsonToken.END_OBJECT) {
+                            String field = parser.currentName();
+                            parser.nextToken(); // move to value
+                            switch (field) {
+                                case "country_code" -> countryCode = parser.getText();
+                                case "state_code" -> stateCode = parser.getText();
+                                case "name" -> name = parser.getText();
+                                case "latitude" -> latitude = parser.getText();
+                                case "longitude" -> longitude = parser.getText();
+                                case "population" -> { if (parser.currentToken() != JsonToken.VALUE_NULL) population = parser.getText(); }
+                                case "timezone" -> timezone = parser.getText();
+                                case "type" -> type = parser.getText();
+                                case "level" -> { if (parser.currentToken() != JsonToken.VALUE_NULL) level = parser.getText(); }
+                                default -> parser.skipChildren();
+                            }
+                            parser.nextToken(); // move to next PROPERTY_NAME or END_OBJECT
+                        }
+
+                        writer.write(val(countryCode));
+                        writer.write('\t');
+                        writer.write(val(stateCode));
+                        writer.write('\t');
+                        writer.write(val(name));
+                        writer.write('\t');
+                        writer.write(val(latitude));
+                        writer.write('\t');
+                        writer.write(val(longitude));
+                        writer.write('\t');
+                        writer.write(val(population));
+                        writer.write('\t');
+                        writer.write(val(timezone));
+                        writer.write('\t');
+                        writer.write(val(type));
+                        writer.write('\t');
+                        writer.write(val(level));
+                        writer.write('\n');
+                    }
+                } catch (Exception e) {
+                    writeError.set(new RuntimeException(e));
+                }
+            });
+
+            try (Reader reader = new InputStreamReader(pipedIn, StandardCharsets.UTF_8)) {
+                copy.copyIn("""
+                COPY staging_city_json
+                FROM STDIN
+                WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
+            """, reader);
+            }
+
+            writerThread.join();
+            RuntimeException ex = writeError.get();
+            if (ex != null) {
+                throw ex;
+            }
         }
     }
 

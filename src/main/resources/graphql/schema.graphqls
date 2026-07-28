@@ -53,4 +53,5 @@ type Mutation {
     seedCountries: SeedPayload!
     seedStates: SeedPayload!
     seedPostalCodes: SeedPayload!
+    seedAll: SeedPayload!
 }

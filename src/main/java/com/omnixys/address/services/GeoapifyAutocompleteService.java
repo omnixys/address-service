@@ -2,6 +2,7 @@ package com.omnixys.address.services;
 
 import com.omnixys.address.models.dto.GeoapifyAutocompleteResponse;
 import com.omnixys.address.models.entity.City;
+import com.omnixys.address.models.entity.Country;
 import com.omnixys.address.models.entity.HouseNumber;
 import com.omnixys.address.models.entity.PostalCode;
 import com.omnixys.address.models.entity.Street;
@@ -176,33 +177,83 @@ public class GeoapifyAutocompleteService {
          * STEP 2: Resolve DB entities (IMPORTANT)
          * -------------------------------------------------------------
          */
-        var country = countryService.findByName(countryName);
+        Country country;
+        try {
+            country = countryService.findByName(countryName);
+        } catch (IllegalArgumentException e) {
+            if (countryCode != null && !countryCode.isBlank()) {
+                log.warn("Country not found by name={}, trying iso2={}", countryName, countryCode);
+                country = countryService.findByIso2(countryCode);
+            } else {
+                throw e;
+            }
+        }
 
         var state = stateService.findByNameAndCountryId(
                 stateName,
                 country.getId()
-
         );
 
-        var city = cityService.findByNameAndStateId(
-                cityName,
-                state.getId()
-        );
+        City city = null;
+        PostalCode postal = null;
 
-        var postal = postalCodeService.findByCodeAndCityId(
-                postalCode,
-                city.getId()
-        );
+        try {
+            city = cityService.findByNameAndStateId(
+                    cityName,
+                    state.getId()
+            );
+        } catch (IllegalArgumentException e) {
+            log.warn("City not found by name={}, trying postal code fallback: code={}", cityName, postalCode);
+        }
 
-        var street = streetService.findByNameAndCityId(
-                streetName,
-                city.getId()
-        );
+        if (city == null && postalCode != null && !postalCode.isBlank()) {
+            var postalCandidates = postalCodeService.findByCode(postalCode);
+            if (!postalCandidates.isEmpty()) {
+                postal = postalCandidates.get(0);
+                city = postal.getCity();
+                log.info("Resolved city={} via postal code={}", city != null ? city.getName() : null, postalCode);
+            }
+        }
 
-        var house = houseNumberService.findByHouseNumberAndStreetId(
-                houseNumber,
-                street.getId()
-        );
+        if (city == null) {
+            log.error("Cannot resolve city for name={}, state={}, postalCode={}", cityName, stateName, postalCode);
+            throw new IllegalArgumentException("city not found: " + cityName);
+        }
+
+        if (postal == null) {
+            try {
+                postal = postalCodeService.findByCodeAndCityId(
+                        postalCode,
+                        city.getId()
+                );
+            } catch (IllegalArgumentException e) {
+                log.warn("PostalCode not linked to city, trying code-only: code={}, city={}", postalCode, city.getId());
+                var candidates = postalCodeService.findByCode(postalCode);
+                postal = candidates.isEmpty() ? null : candidates.get(0);
+            }
+        }
+
+        Street street = null;
+        try {
+            street = streetService.findByNameAndCityId(
+                    streetName,
+                    city.getId()
+            );
+        } catch (IllegalArgumentException e) {
+            log.warn("Street not found for name={} and city={}", streetName, city.getId());
+        }
+
+        HouseNumber house = null;
+        if (street != null) {
+            try {
+                house = houseNumberService.findByHouseNumberAndStreetId(
+                        houseNumber,
+                        street.getId()
+                );
+            } catch (IllegalArgumentException e) {
+                log.warn("HouseNumber not found for number={} and street={}", houseNumber, street.getId());
+            }
+        }
 
         /**
          * -------------------------------------------------------------
@@ -217,15 +268,15 @@ public class GeoapifyAutocompleteService {
                 state != null ? state.getId() : null,
                 city.getId(),
                 postal != null ? postal.getId() : null,
-                street.getId(),
-                house.getId(),
+                street != null ? street.getId() : null,
+                house != null ? house.getId() : null,
 
                 country.getName(),
-                state.getName(),
+                state != null ? state.getName() : null,
                 city.getName(),
                 postal != null ? postal.getCode(): null,
-                street.getName(),
-                house.getNumber()
+                street != null ? street.getName() : null,
+                house != null ? house.getNumber() : null
         );
     }
 
