@@ -20,28 +20,34 @@ public class EventHandler {
     private final OmnixysLogger log;
 
     @KafkaEvent(topic = "event.create.address")
-    public void handleCreate(KafkaEnvelope<?> envelope) {;
-
-        log.info("Processing event: {}", envelope);
-
-        CreateEventAddressDTO dto = objectMapper.convertValue(
-                envelope.payload(),
-                CreateEventAddressDTO.class
-        );
-
-        eventAddressService.createEventAddress(dto);
+    public void handleCreate(KafkaEnvelope<?> envelope) {
+        log.info("Processing event.create.address: {}", envelope);
+        try {
+            CreateEventAddressDTO dto = objectMapper.convertValue(
+                    envelope.payload(),
+                    CreateEventAddressDTO.class
+            );
+            eventAddressService.createEventAddress(dto);
+            log.info("event.create.address completed: {}", dto);
+        } catch (Exception e) {
+            log.error("event.create.address failed: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @KafkaEvent(topic = "event.delete.address")
     public void handleDelete(KafkaEnvelope<?> envelope) {
-
-        log.info("Processing event: {}", envelope);
-
-        DeleteEventAddressDTO dto = objectMapper.convertValue(
-                envelope.payload(),
-                DeleteEventAddressDTO.class
-        );
-
-        eventAddressService.deleteEventAddressesByEventIds(dto.normalizedEventIds());
+        log.info("Processing event.delete.address: {}", envelope);
+        try {
+            DeleteEventAddressDTO dto = objectMapper.convertValue(
+                    envelope.payload(),
+                    DeleteEventAddressDTO.class
+            );
+            eventAddressService.deleteEventAddressesByEventIds(dto.normalizedEventIds());
+            log.info("event.delete.address completed: eventIds={}", dto.normalizedEventIds());
+        } catch (Exception e) {
+            log.error("event.delete.address failed: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 }
