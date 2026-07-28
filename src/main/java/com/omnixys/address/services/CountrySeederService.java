@@ -10,6 +10,7 @@ import com.omnixys.address.repository.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ClassPathResource;
@@ -22,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -57,6 +59,8 @@ public class CountrySeederService {
             throw new IllegalStateException("Seeding disabled");
         }
 
+        log.info("Starting country seed from API");
+
         // 1️⃣ Load base data from API
         List<CountryDTO> apiCountries =
                 restClient.get()
@@ -64,10 +68,16 @@ public class CountrySeederService {
                         .retrieve()
                         .body(new ParameterizedTypeReference<>() {});
 
-        if (apiCountries == null || apiCountries.isEmpty()) return;
+        if (apiCountries == null || apiCountries.isEmpty()) {
+            log.warn("Country API returned empty or null response");
+            return;
+        }
+
+        log.info("Fetched {} countries from API", apiCountries.size());
 
         // 2️⃣ Load detail data from local JSON
         Map<String, CountryDetailsDTO> detailsMap = loadCountryDetails();
+        log.info("Loaded {} detail records from countries.json", detailsMap.size());
 
         // 3️⃣ Load existing countries
         Map<String, Country> existing =
@@ -77,6 +87,8 @@ public class CountrySeederService {
                                 c -> c.getIso2().toUpperCase(),
                                 c -> c
                         ));
+
+        log.info("Found {} existing countries in database", existing.size());
 
         int counter = 0;
 
@@ -118,6 +130,8 @@ public class CountrySeederService {
 
         em.flush();
         em.clear();
+
+        log.info("Country seed completed, processed {} countries", counter);
     }
 
     // =====================================================
@@ -142,6 +156,7 @@ public class CountrySeederService {
                     ));
 
         } catch (Exception e) {
+            log.error("Failed to load countries.json", e);
             throw new IllegalStateException("Failed to load countries.json", e);
         }
     }
