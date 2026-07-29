@@ -1,6 +1,7 @@
 package com.omnixys.address.services;
 
 import com.omnixys.address.exception.AddressNotFoundException;
+import com.omnixys.address.analytics.AnalyticsOutboxService;
 import com.omnixys.address.models.entity.EventAddress;
 import com.omnixys.address.models.inputs.CreateEventAddressDTO;
 import com.omnixys.address.models.inputs.CreateEventAddressInput;
@@ -30,6 +31,7 @@ public class EventAddressService {
     private final PostalCodeService postalCodeService;
     private final StreetService streetService;
     private final HouseNumberService houseNumberService;
+    private final AnalyticsOutboxService analyticsOutbox;
 
     /**
      * Creates a new EventAddress using a strict "find-or-create" strategy.
@@ -53,6 +55,8 @@ public class EventAddressService {
                 .build();
 
         repository.save(address);
+        analyticsOutbox.enqueue("address.created.v1", "AddressCreated",
+                "event-address", address.getId(), null, java.util.Map.of("eventId", input.eventId().toString()));
     }
 
     public EventAddressPayload createEventAddress(CreateEventAddressInput input) {
@@ -71,6 +75,8 @@ public class EventAddressService {
                 .build();
 
         repository.save(address);
+        analyticsOutbox.enqueue("address.created.v1", "AddressCreated",
+                "event-address", address.getId(), null, java.util.Map.of("eventId", input.eventId().toString()));
 
         return getSinglePayload(address.getId());
     }
@@ -98,6 +104,8 @@ public class EventAddressService {
         address.setAdditionalInfo(input.additionalInfo());
 
         repository.save(address);
+        analyticsOutbox.enqueue("address.updated.v1", "AddressUpdated",
+                "event-address", address.getId(), null, java.util.Map.of("eventId", address.getEventId().toString()));
 
         return getSinglePayload(address.getId());
     }
@@ -109,6 +117,8 @@ public class EventAddressService {
         }
         log.debug("Deleting event addresses for eventId={}", eventId);
         repository.deleteByEventId(eventId);
+        analyticsOutbox.enqueue("address.deleted.v1", "AddressDeleted",
+                "event-address", eventId, null, java.util.Map.of("eventId", eventId.toString()));
         return true;
     }
 
@@ -126,7 +136,11 @@ public class EventAddressService {
         }
 
         log.debug("Deleting event addresses for eventIds={}", validEventIds);
-        validEventIds.forEach(repository::deleteByEventId);
+        validEventIds.forEach(eventId -> {
+            repository.deleteByEventId(eventId);
+            analyticsOutbox.enqueue("address.deleted.v1", "AddressDeleted",
+                    "event-address", eventId, null, java.util.Map.of("eventId", eventId.toString()));
+        });
         return true;
     }
 

@@ -10,6 +10,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.graphql.data.federation.FederationSchemaFactory;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
@@ -21,6 +22,7 @@ import static com.omnixys.address.util.Banner.TEXT;
 @EnableWebSecurity
 @EnableMethodSecurity
 @EnableAsync
+@EnableScheduling
 @EnableAspectJAutoProxy
 @SuppressWarnings({"ClassUnconnectedToPackage"})
 public class AddressApplication {
