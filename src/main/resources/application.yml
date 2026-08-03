@@ -202,9 +202,16 @@ app:
 
 # Logging-Konfiguration
 logging:
+  file.name: ./tmp/application.log
   structured:
     format:
-      console: ecs
+      file: ecs
+  pattern:
+    console: >
+      %clr(%date{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}){faint} %clr(%5level) %clr(${PID:- }){magenta}
+      %clr(---){faint} %clr([%15.15thread]){faint} %clr(%-40.40logger{39}){cyan}
+      %clr( [traceId=%X{traceId} spanId=%X{spanId}]){faint}
+      %clr(:){faint} %msg%n%wEx
   level:
     com.omnixys.address: trace
 
@@ -229,8 +236,8 @@ logging:
     org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: debug
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: error
     io.micrometer.observation.contextpropagation.ObservationThreadLocalAccessor: error
-    org.hibernate.SQL: debug
-    org.hibernate.orm.jdbc.bind: trace
+    org.hibernate.SQL: info
+    org.hibernate.orm.jdbc.bind: info
     org.hibernate.SQL_SLOW: warn
     org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor: debug
     io.qameta.allure.AllureLifecycle: fatal

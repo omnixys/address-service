@@ -1,5 +1,6 @@
 package com.omnixys.address.services;
 
+import com.omnixys.address.analytics.AnalyticsOutboxService;
 import com.omnixys.address.exception.AddressNotFoundException;
 import com.omnixys.address.repository.EventAddressProjection;
 import com.omnixys.address.repository.EventAddressRepository;
@@ -10,11 +11,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,6 +42,8 @@ class EventAddressServiceTest {
     private StreetService streetService;
     @Mock
     private HouseNumberService houseNumberService;
+    @Mock
+    private AnalyticsOutboxService analyticsOutbox;
     @Mock
     private EventAddressProjection projection;
 
@@ -81,6 +89,10 @@ class EventAddressServiceTest {
 
         verify(repository).deleteByEventId(rootId);
         verify(repository).deleteByEventId(childId);
+        verify(analyticsOutbox).enqueue(eq("address.deleted.v1"), eq("AddressDeleted"),
+                eq("event-address"), eq(rootId), isNull(), anyMap());
+        verify(analyticsOutbox).enqueue(eq("address.deleted.v1"), eq("AddressDeleted"),
+                eq("event-address"), eq(childId), isNull(), anyMap());
     }
 
     @Test
@@ -88,5 +100,7 @@ class EventAddressServiceTest {
         assertThrows(IllegalArgumentException.class,
                 () -> service.deleteEventAddressesByEventIds(List.of()));
         verify(repository, never()).deleteByEventId(org.mockito.ArgumentMatchers.any());
+        verify(analyticsOutbox, never()).enqueue(anyString(), anyString(), anyString(),
+                org.mockito.ArgumentMatchers.any(), anyString(), anyMap());
     }
 }

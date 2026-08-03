@@ -47,7 +47,7 @@
         <federation-graphql-java-support.version>6.0.0</federation-graphql-java-support.version>
         <protobuf-java.version>4.32.0</protobuf-java.version>
 
-        <omnixys.bom.version>1.0.2</omnixys.bom.version>
+        <omnixys.bom.version>1.0.6</omnixys.bom.version>
     </properties>
 
         <repositories>
